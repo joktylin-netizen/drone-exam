@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第四章：緊急處置與飛行決策（43題）｜Anki 間隔重複 (SRS) 記憶卡系統</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #dbeafe;
+            --secondary: #0284c7;
+            --again: #dc2626;
+            --again-bg: #fef2f2;
+            --hard: #ea580c;
+            --hard-bg: #fff7ed;
+            --good: #16a34a;
+            --good-bg: #f0fdf4;
+            --easy: #2563eb;
+            --easy-bg: #eff6ff;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0284c7 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        header h1 {
+            font-size: 1.55rem;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        header p {
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+        /* Top Dashboard */
+        .srs-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .stat-num {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .stat-new .stat-num { color: #2563eb; }
+        .stat-learn .stat-num { color: #dc2626; }
+        .stat-review .stat-num { color: #d97706; }
+        .stat-grad .stat-num { color: #16a34a; }
+
+        /* Controls Bar */
+        .toolbar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        select, .btn-tool {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .btn-tool:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* Progress Bar */
+        .progress-wrap {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #16a34a);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Flashcard Area */
+        .flashcard {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+            padding: 28px 26px;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .card-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .badge-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+        .badge-no { background: #0f172a; color: white; }
+        .badge-cat { background: #e0f2fe; color: #0369a1; }
+        .badge-status-new { background: #dbeafe; color: #1d4ed8; }
+        .badge-status-learning { background: #fee2e2; color: #b91c1c; }
+        .badge-status-graduated { background: #dcfce7; color: #15803d; }
+        .srs-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            line-height: 1.55;
+        }
+
+        /* Interactive Options on Card Front */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .opt-btn {
+            text-align: left;
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .opt-btn:hover:not(:disabled) {
+            border-color: #60a5fa;
+            background: #eff6ff;
+        }
+        .opt-btn.correct-choice {
+            border-color: #16a34a !important;
+            background: #dcfce7 !important;
+            color: #14532d !important;
+        }
+        .opt-btn.wrong-choice {
+            border-color: #dc2626 !important;
+            background: #fee2e2 !important;
+            color: #7f1d1d !important;
+        }
+        .opt-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .opt-btn.correct-choice .opt-letter {
+            background: #16a34a;
+            color: white;
+        }
+        .opt-btn.wrong-choice .opt-letter {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Answer & Explanation Back Panel */
+        .answer-panel {
+            display: none;
+            background: #f8fafc;
+            border-top: 2px dashed #cbd5e1;
+            margin-top: 8px;
+            padding-top: 18px;
+            animation: fadeIn 0.22s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .note-box {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 0.98rem;
+            color: #78350f;
+        }
+        .note-box strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.94rem;
+        }
+
+        /* Flip Button */
+        .btn-flip {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.08rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+            transition: background 0.2s;
+        }
+        .btn-flip:hover { background: #1d4ed8; }
+
+        /* Anki 4 Rating Buttons */
+        .anki-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .anki-btn {
+            padding: 12px 8px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .anki-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .anki-btn.recommended {
+            outline: 3px solid #0f172a;
+            outline-offset: 2px;
+        }
+        .anki-time {
+            font-size: 0.78rem;
+            font-weight: 700;
+            opacity: 0.85;
+        }
+        .anki-title {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .anki-sub {
+            font-size: 0.74rem;
+            opacity: 0.8;
+        }
+        .btn-again { background: var(--again-bg); color: var(--again); border-color: #fecaca; }
+        .btn-hard { background: var(--hard-bg); color: var(--hard); border-color: #fed7aa; }
+        .btn-good { background: var(--good-bg); color: var(--good); border-color: #bbf7d0; }
+        .btn-easy { background: var(--easy-bg); color: var(--easy); border-color: #bfdbfe; }
+
+        .shortcut-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        /* Deck Browser Modal / Section */
+        .browser-panel {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 22px;
+            margin-top: 18px;
+        }
+        .browser-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+        .browser-table th, .browser-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 8px;
+            text-align: left;
+        }
+        .browser-table th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .browser-row:hover {
+            background: #eff6ff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .srs-dashboard { grid-template-columns: repeat(2, 1fr); }
+            .anki-buttons { grid-template-columns: repeat(2, 1fr); }
+            .question-title { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>第四章：緊急處置與飛行決策（43 題）｜Anki 間隔重複 (SRS) 記憶卡系統</h1>
+    <p>結合 SM-2 間隔重複演算法、6 大人為因素與決策考區分類及「非以上皆是」陷阱提醒</p>
+</header>
+
+<div class="container">
+    <!-- SRS Statistics Dashboard -->
+    <div class="srs-dashboard">
+        <div class="stat-card stat-new">
+            <div class="stat-num" id="countNew">43</div>
+            <div class="stat-label">🆕 未學新卡 (New)</div>
+        </div>
+        <div class="stat-card stat-learn">
+            <div class="stat-num" id="countLearning">0</div>
+            <div class="stat-label">🔥 學習/重來中 (Learning)</div>
+        </div>
+        <div class="stat-card stat-review">
+            <div class="stat-num" id="countDue">0</div>
+            <div class="stat-label">⏰ 到期需複習 (Due)</div>
+        </div>
+        <div class="stat-card stat-grad">
+            <div class="stat-num" id="countGrad">0</div>
+            <div class="stat-label">✅ 已熟記精通 (Mastered)</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-wrap" title="熟記精通進度">
+        <div class="progress-fill" id="masteryBar"></div>
+    </div>
+
+    <!-- Filter & Mode Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <label for="catFilter" style="font-weight:700;font-size:0.9rem;">主題篩選：</label>
+            <select id="catFilter" onchange="onFilterChange()">
+                <option value="ALL">全部主題（共 43 題）</option>
+                <option value="1. 酒精、藥物與生理因素總論">1. 酒精、藥物與生理因素總論（5 題）</option>
+                <option value="2. 過度換氣與壓力反應">2. 過度換氣與壓力反應（9 題）</option>
+                <option value="3. 疲勞分類與工作量管理">3. 疲勞分類與工作量管理（7 題）</option>
+                <option value="4. 脫水與熱中暑預防">4. 脫水與熱中暑預防（7 題）</option>
+                <option value="5. 狀況警覺、飛航前檢查與緊急落地處置">5. 狀況警覺、飛航前檢查與緊急落地處置（7 題）</option>
+                <option value="6. 飛行決策 (ADM)、風險管理與危險心態">6. 飛行決策 (ADM)、風險管理與危險心態（8 題）</option>
+            </select>
+
+            <select id="modeSelect" onchange="onFilterChange()">
+                <option value="SRS">🎯 Anki 智能排程（優先複習到期＋新卡）</option>
+                <option value="WEAK">🔥 弱點/錯題特訓（只刷學習中與曾答錯題）</option>
+                <option value="SEQ">📖 依題號順序瀏覽（第 1 題 ～ 第 43 題）</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn-tool" onclick="toggleBrowser()" id="btnBrowser">📋 題庫熟練度總覽</button>
+            <button class="btn-tool" onclick="resetProgress()" style="color:#dc2626;border-color:#fca5a5;">🗑️ 重置進度</button>
+        </div>
+    </div>
+
+    <!-- Main Flashcard View -->
+    <div class="flashcard" id="flashcardView">
+        <div>
+            <div class="card-top-bar">
+                <div class="badge-group">
+                    <span class="badge badge-no" id="cardNo">第四章 第 1 題</span>
+                    <span class="badge badge-cat" id="cardCat">1. 酒精、藥物與生理因素</span>
+                    <span class="badge badge-status-new" id="cardStatus">新卡片</span>
+                </div>
+                <div class="srs-meta" id="cardMeta">難度因子 EF: 2.50 ｜ 連對: 0 ｜ 遺忘: 0</div>
+            </div>
+
+            <div class="question-title" id="cardQuestion">載入中...</div>
+
+            <div class="options-grid" id="cardOptions"></div>
+        </div>
+
+        <div>
+            <button class="btn-flip" id="btnShowAnswer" onclick="revealAnswer()">👀 顯示答案與解析（或直接點擊上方選項作答 / 按空白鍵）</button>
+
+            <div class="answer-panel" id="answerPanel">
+                <div class="note-box">
+                    <strong id="correctBanner">✅ 正確答案：(A)</strong>
+                    <span id="cardNote"></span>
+                </div>
+
+                <div class="anki-buttons">
+                    <button class="anki-btn btn-again" id="btnRate1" onclick="rateCard(1)">
+                        <span class="anki-time" id="time1">&lt; 1 分鐘 (3題後)</span>
+                        <span class="anki-title">1. 重來 (Again)</span>
+                        <span class="anki-sub">忘記 / 答錯</span>
+                    </button>
+                    <button class="anki-btn btn-hard" id="btnRate2" onclick="rateCard(2)">
+                        <span class="anki-time" id="time2">&lt; 6 分鐘 (6題後)</span>
+                        <span class="anki-title">2. 困難 (Hard)</span>
+                        <span class="anki-sub">猶豫 / 靠猜對</span>
+                    </button>
+                    <button class="anki-btn btn-good" id="btnRate3" onclick="rateCard(3)">
+                        <span class="anki-time" id="time3">10 分鐘 / 晉級</span>
+                        <span class="anki-title">3. 良好 (Good)</span>
+                        <span class="anki-sub">正常回想答對</span>
+                    </button>
+                    <button class="anki-btn btn-easy" id="btnRate4" onclick="rateCard(4)">
+                        <span class="anki-time" id="time4">4 天 (直接熟記)</span>
+                        <span class="anki-title">4. 簡單 (Easy)</span>
+                        <span class="anki-sub">秒答 / 完全精通</span>
+                    </button>
+                </div>
+                <div class="shortcut-hint">⌨️ 鍵盤快捷鍵：按 <b>Space</b> 翻面 ｜ 按數字鍵 <b>1</b> (重來)、<b>2</b> (困難)、<b>3</b> (良好)、<b>4</b> (簡單) 評分</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Browser Table -->
+    <div class="browser-panel" id="browserPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <h3 style="color:var(--primary);">📋 第四章：緊急處置與飛行決策（43 題）SRS 記憶狀態總覽（點擊任一題可直接抽考）</h3>
+            <button class="btn-tool" onclick="toggleBrowser()">返回記憶卡</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="browser-table">
+                <thead>
+                    <tr>
+                        <th style="width:65px;">題號</th>
+                        <th style="width:190px;">子主題</th>
+                        <th>題目內容與正解</th>
+                        <th style="width:95px;">狀態</th>
+                        <th style="width:90px;">連對/遺忘</th>
+                    </tr>
+                </thead>
+                <tbody id="browserBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const RAW_CARDS = [{"id": 1, "cat": "1. 酒精、藥物與生理因素總論", "q": "遙控無人機操作人在執行任務前及過程中,需確保參與執行的成員不受下列哪種狀況的影響?", "options": ["娛樂圈八卦和謠言。", "國內股市行情。", "酒精及藥物。", "世界經濟發展情勢。"], "a": "C", "note": "執行任務前及過程中，必須確保所有參與成員不受【酒精及藥物】的影響。"}, {"id": 2, "cat": "1. 酒精、藥物與生理因素總論", "q": "遙控無人機操作人在執行任務前及過程中,下列哪種狀況也可能影響操作安全?", "options": ["娛樂圈八卦和謠言。", "一般的成藥如抗組織胺或解除充血劑。", "國內股市行情。", "世界經濟發展情勢。"], "a": "B", "note": "除了酒精外，一般感冒或過敏成藥如【抗組織胺】（易嗜睡）或【解除充血劑】（鼻塞藥，易心悸暈眩）也會影響操作安全。"}, {"id": 3, "cat": "1. 酒精、藥物與生理因素總論", "q": "有關可能影響操作人安全操作遙控無人機的因素主要有下列哪種狀況?", "options": ["過度換氣、壓力、疲勞。", "脫水、熱中暑。", "酒精與藥物。", "以上皆是。"], "a": "D", "note": "影響安全操作的生理與心理因素總覽：過度換氣、壓力、疲勞、脫水、熱中暑、酒精與藥物（選以上皆是）。"}, {"id": 4, "cat": "2. 過度換氣與壓力反應", "q": "過度換氣若無法善加控制,可能讓遙控無人機操作人進入下列哪個狀態?", "options": ["神經緊張。", "意識不清。", "心情鬱悶。", "懷疑心重。"], "a": "B", "note": "過度換氣若無法善加控制，腦部血管因二氧化碳過低而收縮缺氧，最後會讓操作人進入【意識不清】狀態！"}, {"id": 5, "cat": "2. 過度換氣與壓力反應", "q": "過度換氣的常見症狀有下列哪種狀況?", "options": ["視界窄化、意識不清。", "輕快或暈眩感、肢體末稍有刺痛感。", "對冷熱敏感、肌肉痙攣感。", "以上皆是。"], "a": "D", "note": "過度換氣常見症狀：視界窄化、意識不清、輕快或暈眩感、肢體末梢刺痛感、對冷熱敏感、肌肉痙攣感（選以上皆是）。"}, {"id": 6, "cat": "2. 過度換氣與壓力反應", "q": "過度換氣的改善方法是下列哪種方式?", "options": ["多閱讀、多聽音樂。", "適當的飲食。", "血液裡的二氧化碳濃度恢復到正常狀態。", "擴展社交範圍。"], "a": "C", "note": "⚡原理必考：過度換氣是因呼吸過快把二氧化碳排光了，故改善核心原理是讓【血液裡的二氧化碳濃度恢復到正常狀態】。"}, {"id": 7, "cat": "2. 過度換氣與壓力反應", "q": "最好的預防及矯治過度換氣的方法就是下列哪種方式?", "options": ["讓呼吸保持正常、朝向紙袋呼吸或大聲交談。", "多閱讀、多聽音樂。", "適當的飲食。", "擴展社交範圍。"], "a": "A", "note": "⚡處置必考：預防及矯治過度換氣最好的方法是【讓呼吸保持正常、朝向紙袋呼吸（吸回二氧化碳）或大聲交談（減緩換氣頻率）】。"}, {"id": 8, "cat": "2. 過度換氣與壓力反應", "q": "下列哪種狀況是人體對於生理及心理的需求所做出的反應?", "options": ["脫水。", "壓力。", "熱中暑。", "酒醉。"], "a": "B", "note": "定義秒記：人體對於生理及心理的需求所做出的反應，稱為【壓力 (Stress)】。"}, {"id": 9, "cat": "2. 過度換氣與壓力反應", "q": "壓力源包括下列哪種狀況?", "options": ["物理的壓力(如噪音及振動)。", "生理的壓力(如疲勞)。", "心理的壓力(如工作困難或個人情緒因素)。", "以上皆是。"], "a": "D", "note": "三大壓力源分類：物理壓力（噪音、振動）、生理壓力（疲勞）、心理壓力（工作困難、個人情緒）（選以上皆是）。"}, {"id": 10, "cat": "2. 過度換氣與壓力反應", "q": "持續性的急性壓力可能發展成下列哪種狀況?", "options": ["不定期的過度換氣壓力。", "不定期的疲勞壓力。", "長期的慢性壓力。", "不定期的酒精壓力。"], "a": "C", "note": "持續性的「急性壓力」若未解除，會發展成【長期的慢性壓力】。"}, {"id": 11, "cat": "2. 過度換氣與壓力反應", "q": "慢性壓力在長期累積或壓抑下,會導致下列哪種狀況?", "options": ["個人能力大幅提升。", "個人能力時好時壞。", "個人能力大幅下滑。", "個人能力保持不變。"], "a": "C", "note": "慢性壓力在長期累積或壓抑下，會導致操作人【個人能力大幅下滑】。"}, {"id": 12, "cat": "2. 過度換氣與壓力反應", "q": "遙控無人機操作人若體驗到壓力已導致己身能力下滑時即應採取下列哪種作為?", "options": ["暫停執行任務、適當休息。", "堅持到底、繼續執行任務。", "順其自然、不必大驚小怪。", "邊聽音樂舒壓、邊執行任務。"], "a": "A", "note": "當體驗到壓力已導致己身能力下滑時，應立即採取【暫停執行任務、適當休息】（絕不可硬撐）。"}, {"id": 13, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "狀況警覺是對哪些風險元素的認知與瞭解?", "options": ["飛行作業。", "操作人、航空器。", "環境及任務種類。", "以上皆是。"], "a": "D", "note": "【狀況警覺 (Situational Awareness)】是對五大風險元素的認知與瞭解：飛行作業、操作人、航空器、環境及任務種類（選以上皆是）。"}, {"id": 14, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "下列哪種狀況可能使遙控無人機操作人過度集中注意力在某件事物而失去對整體任務的掌握?", "options": ["疲勞。", "壓力。", "工作量過多。", "以上皆是。"], "a": "D", "note": "當處於【疲勞、壓力、工作量過多】時，操作人容易出現「注意力窄化」（過度集中注意力在單一事上），而失去對整體任務的掌握（選以上皆是）。"}, {"id": 15, "cat": "3. 疲勞分類與工作量管理", "q": "操作遙控無人機前藉由下列哪些有效的工作量管理,以確保飛行任務安全執行?", "options": ["計畫。", "整理。", "排序工作任務。", "以上皆是。"], "a": "D", "note": "操作前有效的工作量管理三步驟：【計畫、整理、排序工作任務】（選以上皆是）。"}, {"id": 16, "cat": "3. 疲勞分類與工作量管理", "q": "疲勞可分為下列哪幾種?", "options": ["生理性疲勞。", "心理性疲勞。", "急性與慢性疲勞。", "以上皆是。"], "a": "D", "note": "疲勞的分類包含：生理性疲勞、心理性疲勞、急性與慢性疲勞（選以上皆是）。"}, {"id": 17, "cat": "3. 疲勞分類與工作量管理", "q": "疲勞會導致下列哪幾種症狀,影響遙控無人機操作人的判斷力?", "options": ["注意力渙散。", "專注力下降。", "協調性及溝通性降低。", "以上皆是。"], "a": "D", "note": "疲勞會導致的症狀：注意力渙散、專注力下降、協調性及溝通性降低（選以上皆是）。"}, {"id": 18, "cat": "3. 疲勞分類與工作量管理", "q": "急性疲勞通常是下列哪一種?", "options": ["短期。", "長期。", "有時長期有時短期。", "以上皆非。"], "a": "A", "note": "「急性疲勞」通常是【短期】的（例如單次高強度飛行任務後產生，可透過充分睡眠恢復）。"}, {"id": 19, "cat": "3. 疲勞分類與工作量管理", "q": "遙控無人機操作人若忽略或未及時改善急性疲勞,則會進一步造成下列哪種狀況?", "options": ["過度疲勞。", "慢性疲勞。", "中度疲勞。", "低度疲勞。"], "a": "B", "note": "若忽略或未及時改善短期的「急性疲勞」，長期累積就會進一步變成【慢性疲勞】。"}, {"id": 20, "cat": "3. 疲勞分類與工作量管理", "q": "慢性疲勞可能出現的症狀包括下列哪種狀況?", "options": ["虛弱、強烈的疲倦、倦怠感。", "心悸、呼吸不順、頭痛。", "其他身體的不適及沮喪與焦慮。", "以上皆是。"], "a": "D", "note": "慢性疲勞症狀：虛弱與強烈疲倦倦怠感、心悸與呼吸不順及頭痛、身體不適與沮喪焦慮（選以上皆是）。"}, {"id": 21, "cat": "3. 疲勞分類與工作量管理", "q": "急性疲勞中,有種特殊情況稱之為下列哪種疲勞,在操作方面的影響主要有時機掌握混亂及視域過度聚焦?", "options": ["社會性疲勞。", "經濟性疲勞。", "技能疲勞。", "教育性疲勞。"], "a": "C", "note": "⚡專有名詞必考：急性疲勞中有一種特殊情況，會造成「時機掌握混亂」及「視域過度聚焦」，稱為【技能疲勞 (Skill Fatigue)】！"}, {"id": 22, "cat": "4. 脫水與熱中暑預防", "q": "下列哪種狀況是身體組織水分不足的情況?", "options": ["脫水。", "失眠。", "低血糖。", "缺氧。"], "a": "A", "note": "定義秒記：身體組織水分不足的情況，稱為【脫水】。"}, {"id": 23, "cat": "4. 脫水與熱中暑預防", "q": "下列哪種狀況可能會造成水分補充不及導致脫水?", "options": ["長時間處於高溫、高溼度、高海拔環境。", "心理壓力。", "飲用過多刺激性飲料。", "以上皆是。"], "a": "D", "note": "造成脫水的三大成因：長時間處於高溫/高濕度/高海拔環境、心理壓力、飲用過多刺激性利尿飲料（如咖啡、濃茶）（選以上皆是）。"}, {"id": 24, "cat": "4. 脫水與熱中暑預防", "q": "脫水最先出現的症狀是下列哪種狀況,將導致遙控無人機操作人的生理及心智表現下滑?", "options": ["口乾。", "舌燥。", "較強的疲勞感。", "以上皆是。"], "a": "D", "note": "脫水最先出現的初期警訊症狀：【口乾、舌燥、較強的疲勞感】（選以上皆是）。"}, {"id": 25, "cat": "4. 脫水與熱中暑預防", "q": "為避免脫水,遙控無人機操作人應隨時掌握己身之生理狀況,並採取下列哪個動作?", "options": ["隨時閱讀。", "適時補充水分。", "適時上廁所。", "隨時聽音樂。"], "a": "B", "note": "避免脫水最直接的做法：隨時掌握生理狀況，並【適時補充水分】。"}, {"id": 26, "cat": "4. 脫水與熱中暑預防", "q": "下列哪種狀況是指身體無法對體溫進行控制?", "options": ["缺氧。", "低血糖。", "熱中暑。", "失眠。"], "a": "C", "note": "定義秒記：身體無法對體溫進行控制（體溫調節中樞失靈），稱為【熱中暑】。"}, {"id": 27, "cat": "4. 脫水與熱中暑預防", "q": "熱中暑原因是下列哪種狀況?", "options": ["身體的熱無法排出。", "飲酒過量。", "失眠。", "低血糖。"], "a": "A", "note": "熱中暑的直接原因是【身體的熱無法排出】。"}, {"id": 28, "cat": "4. 脫水與熱中暑預防", "q": "避免熱中暑的方法是採取下列哪個動作?", "options": ["勿飲酒過量。", "充分的睡眠。", "規律攝取足量水份。", "按時用餐。"], "a": "C", "note": "避免熱中暑的方法是採取【規律攝取足量水份】。"}, {"id": 29, "cat": "1. 酒精、藥物與生理因素總論", "q": "若遙控無人機操作人服用下列哪種藥物,可能會產生暈眩或是感知功能不全的情況?", "options": ["成藥。", "抗組織胺。", "解除充血劑。", "以上皆是。"], "a": "D", "note": "服用【成藥、抗組織胺、解除充血劑】都可能產生暈眩或感知功能不全的情況（選以上皆是）。"}, {"id": 30, "cat": "1. 酒精、藥物與生理因素總論", "q": "酒精可能對下列哪種狀況造成影響?", "options": ["影響操作及判斷、較難掌握周邊環境的變化。", "身體協調性變差、視界窄化。", "降低邏輯能力及注意力低落。", "以上皆是。"], "a": "D", "note": "酒精對操作的危害：影響操作及判斷與難掌握環境變化、身體協調性變差與視界窄化、降低邏輯能力及注意力低落（選以上皆是）。"}, {"id": 31, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "在下列哪個時機,遙控無人機操作人應對遙控無人機進行起飛前檢查?", "options": ["每次操作前。", "遙控無人機有明顯異狀時。", "天氣變壞時。", "操作人感覺不對時。"], "a": "A", "note": "起飛前檢查的正確時機：【每次操作前】都必須執行！"}, {"id": 32, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "遙控無人機起飛前檢查中發現任何異常狀況,應採取下列哪個動作?", "options": ["暫時忽略異常狀況,繼續操作。", "應立即修正以確保安全。", "記錄異常狀況就好,不必大驚小怪,繼續操作。", "任務重要就繼續操作,任務不重要就暫停操作。"], "a": "B", "note": "起飛前檢查發現任何異常狀況，【應立即修正以確保安全】，絕不可忽略或帶病飛行。"}, {"id": 33, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "緊急落地可依類型區分為下列哪幾種?", "options": ["迫降。", "預防性緊急著陸。", "水上迫降。", "以上皆是。"], "a": "D", "note": "緊急落地三大類型：【迫降、預防性緊急著陸、水上迫降】（選以上皆是）。"}, {"id": 34, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "當面對緊急狀況時,若平時沒有熟悉緊急應變之處置程序,操作人可能會陷入下列哪種情境中?", "options": ["遙控無人機即將墜地。", "遙控無人機不會出事。", "遙控無人機的緊急狀況會自動消失。", "遙控無人機會自動處理緊急狀況。"], "a": "A", "note": "若平時未熟悉緊急應變處置程序，面對緊急狀況時操作人可能會陷入【遙控無人機即將墜地】的恐慌無助情境中。"}, {"id": 35, "cat": "5. 狀況警覺、飛航前檢查與緊急落地處置", "q": "當遙控無人機發生異常或緊急事件時,應先穩定操作,掌握無人機位置及高度,再採取下列哪個動作?", "options": ["通報有關機關。", "依檢查表,啟動或關閉相關裝備。", "尋找最佳的緊急落地處。", "以上皆是。"], "a": "C", "note": "⚠️必考非D陷阱題：當無人機發生異常或緊急事件時，先穩定操作、掌握位置及高度後，下一步是 (C)【尋找最佳的緊急落地處】！（千萬別選以上皆是，先把飛機安全降落才是第一要務，降落後才通報！）。"}, {"id": 36, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "飛行決策是基於經驗的累積及判斷集合而成,著重於下列哪種決策方案?", "options": ["學習決策方案。", "評估決策方案。", "選擇決策方案。", "以上皆是。"], "a": "D", "note": "飛行決策 (ADM) 著重於三大方案步驟：【學習決策方案、評估決策方案、選擇決策方案】（選以上皆是）。"}, {"id": 37, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "風險管理的目的是為能夠主動辨識與飛航安全有關的危害因子,並透過下列哪個手段降低到可接受之程度?", "options": ["迴避。", "減少。", "隔離。", "以上皆是。"], "a": "D", "note": "風險管理降低危害因子的三大手段：【迴避、減少、隔離】（選以上皆是）。"}, {"id": 38, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "飛行決策的過程中應掌握下列哪個基本原則?", "options": ["不接受非相關的風險、將風險設定在合適的層級。", "在獲益超過危害時接受風險。", "將風險管理整合在飛行各階段的計劃過程中。", "以上皆是。"], "a": "D", "note": "飛行決策三大基本原則：(1)不接受非相關風險並設在合適層級、(2)在獲益超過危害時接受風險、(3)將風險管理整合在各階段計劃中（選以上皆是）。"}, {"id": 39, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "操作人執行遙控無人機操作時,下列哪種心態干擾會降低飛行決策的品質?", "options": ["反威權、衝動及僥倖。", "衝動、僥倖及服從。", "英雄主義及積極順應。", "以上皆是。"], "a": "A", "note": "⚠️必考非D陷阱題：會降低飛行決策品質的「危險心態」是 (A)【反威權、衝動及僥倖】！（選項B的「服從」與選項C的「積極順應」是正面正確態度，故不可選以上皆是！）。"}, {"id": 40, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "遙控無人機操作人降低風險的方法,包括下列哪種?", "options": ["辨識己身風險。", "預知己身風險。", "覺察己身風險。", "以上皆是。"], "a": "D", "note": "操作人降低己身風險的三大方法：【辨識己身風險、預知己身風險、覺察己身風險】（選以上皆是）。"}, {"id": 41, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "下列哪個因素與飛航安全密切相關,已成為維修部門及飛航管理部門關切的焦點?", "options": ["政治因素。", "人為因素。", "社會因素。", "經濟因素。"], "a": "B", "note": "【人為因素 (Human Factors)】與飛航安全密切相關，已成為維修部門及飛航管理部門關切的焦點。"}, {"id": 42, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "自動決策模式基本上是一種反射性的模式,其形成的重要基礎是下列哪種方式?", "options": ["大量的訓練及經驗。", "擴大參與人數。", "正確的政治指導。", "高深的哲學思想。"], "a": "A", "note": "【自動決策模式（反射性模式）】能在瞬間做出反應，其形成的重要基礎是平時【大量的訓練及經驗】。"}, {"id": 43, "cat": "6. 飛行決策 (ADM)、風險管理與危險心態", "q": "自動決策模式常用於下列哪種情況?", "options": ["緊急情況。", "無法預作分析的情況。", "無法沙盤推演的情況。", "以上皆是。"], "a": "D", "note": "自動決策模式（反射性模式）常用於三大危急情境：【緊急情況、無法預作分析的情況、無法沙盤推演的情況】（選以上皆是）。"}];
+    const STORAGE_KEY = 'caa_drone_ch4_anki_srs_v1';
+
+    let srsState = {};
+    let sessionStep = 0;
+    let currentCard = null;
+    let isRevealed = false;
+    let seqIndex = 0;
+
+    function initSRS() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { srsState = JSON.parse(saved); } catch (e) { srsState = {}; }
+        }
+        RAW_CARDS.forEach(c => {
+            if (!srsState[c.id]) {
+                srsState[c.id] = {
+                    status: 'new',
+                    reps: 0,
+                    lapses: 0,
+                    ease: 2.5,
+                    intervalDays: 0,
+                    dueStep: 0,
+                    dueTime: 0
+                };
+            }
+        });
+        saveSRS();
+    }
+
+    function saveSRS() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(srsState));
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        const now = Date.now();
+        let nNew = 0, nLearn = 0, nDue = 0, nGrad = 0;
+
+        RAW_CARDS.forEach(c => {
+            const st = srsState[c.id];
+            if (st.status === 'new') {
+                nNew++;
+            } else if (st.status === 'learning') {
+                nLearn++;
+            } else if (st.status === 'graduated') {
+                nGrad++;
+                if (st.dueTime <= now || st.dueStep <= sessionStep) {
+                    nDue++;
+                }
+            }
+        });
+
+        document.getElementById('countNew').textContent = nNew;
+        document.getElementById('countLearning').textContent = nLearn;
+        document.getElementById('countDue').textContent = nDue;
+        document.getElementById('countGrad').textContent = nGrad;
+
+        const pct = Math.round((nGrad / RAW_CARDS.length) * 100);
+        document.getElementById('masteryBar').style.width = pct + '%';
+    }
+
+    function getFilteredPool() {
+        const cat = document.getElementById('catFilter').value;
+        return cat === 'ALL' ? RAW_CARDS : RAW_CARDS.filter(c => c.cat === cat);
+    }
+
+    function pickNextCard() {
+        const pool = getFilteredPool();
+        const mode = document.getElementById('modeSelect').value;
+        const now = Date.now();
+
+        if (mode === 'SEQ') {
+            if (seqIndex >= pool.length) seqIndex = 0;
+            return pool[seqIndex];
+        }
+
+        if (mode === 'WEAK') {
+            const weakCards = pool.filter(c => {
+                const st = srsState[c.id];
+                return st.status === 'learning' || st.lapses > 0 || st.ease < 2.4;
+            });
+            if (weakCards.length === 0) {
+                alert('目前此分類下沒有「學習中或曾答錯」的弱點卡片！系統將自動切換回 Anki 智能排程模式。');
+                document.getElementById('modeSelect').value = 'SRS';
+            } else {
+                weakCards.sort((a, b) => (srsState[a.id].dueStep - srsState[b.id].dueStep) || (srsState[b.id].lapses - srsState[a.id].lapses));
+                if (weakCards.length > 1 && currentCard && weakCards[0].id === currentCard.id) {
+                    return weakCards[1];
+                }
+                return weakCards[0];
+            }
+        }
+
+        // Priority 1: Learning cards whose dueStep <= sessionStep
+        const dueLearning = pool.filter(c => srsState[c.id].status === 'learning' && srsState[c.id].dueStep <= sessionStep);
+        if (dueLearning.length > 0) {
+            dueLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            return dueLearning[0];
+        }
+
+        // Priority 2: Graduated review cards that are due
+        const dueReview = pool.filter(c => srsState[c.id].status === 'graduated' && srsState[c.id].dueTime <= now);
+        if (dueReview.length > 0) {
+            dueReview.sort((a, b) => srsState[a.id].dueTime - srsState[b.id].dueTime);
+            return dueReview[0];
+        }
+
+        // Priority 3: New cards
+        const newCards = pool.filter(c => srsState[c.id].status === 'new');
+        if (newCards.length > 0) {
+            return newCards[0];
+        }
+
+        // Priority 4: Any remaining learning cards
+        const anyLearning = pool.filter(c => srsState[c.id].status === 'learning');
+        if (anyLearning.length > 0) {
+            anyLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            if (anyLearning.length > 1 && currentCard && anyLearning[0].id === currentCard.id) {
+                return anyLearning[1];
+            }
+            return anyLearning[0];
+        }
+
+        // Priority 5: All graduated
+        const sortedGrad = [...pool].sort((a, b) => srsState[a.id].ease - srsState[b.id].ease);
+        if (sortedGrad.length > 1 && currentCard && sortedGrad[0].id === currentCard.id) {
+            return sortedGrad[1];
+        }
+        return sortedGrad[0];
+    }
+
+    function renderCard(card) {
+        currentCard = card;
+        isRevealed = false;
+        const st = srsState[card.id];
+
+        document.getElementById('cardNo').textContent = `第四章 第 ${card.id} 題`;
+        document.getElementById('cardCat').textContent = card.cat;
+
+        const statusEl = document.getElementById('cardStatus');
+        if (st.status === 'new') {
+            statusEl.textContent = '🆕 新卡片';
+            statusEl.className = 'badge badge-status-new';
+        } else if (st.status === 'learning') {
+            statusEl.textContent = '🔥 學習/重來中';
+            statusEl.className = 'badge badge-status-learning';
+        } else {
+            statusEl.textContent = `✅ 已熟記（間隔 ${st.intervalDays} 天）`;
+            statusEl.className = 'badge badge-status-graduated';
+        }
+
+        document.getElementById('cardMeta').textContent =
+            `難度因子 EF: ${st.ease.toFixed(2)} ｜ 連對: ${st.reps} 次 ｜ 遺忘: ${st.lapses} 次`;
+
+        document.getElementById('cardQuestion').textContent = `${card.id}. ${card.q}`;
+
+        const optsContainer = document.getElementById('cardOptions');
+        optsContainer.innerHTML = '';
+        card.options.forEach((optText, idx) => {
+            const letter = String.fromCharCode(65 + idx);
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${optText}</span>`;
+            btn.onclick = () => selectOption(letter);
+            optsContainer.appendChild(btn);
+        });
+
+        updateAnkiButtonLabels(st);
+
+        document.getElementById('answerPanel').style.display = 'none';
+        document.getElementById('btnShowAnswer').style.display = 'block';
+        document.querySelectorAll('.anki-btn').forEach(b => b.classList.remove('recommended'));
+    }
+
+    function updateAnkiButtonLabels(st) {
+        document.getElementById('time1').textContent = '< 1 分鐘 (3題後)';
+        document.getElementById('time2').textContent = '< 6 分鐘 (6題後)';
+        if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+            document.getElementById('time3').textContent = '10 分鐘 (12題後)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else if (st.status === 'learning' && st.reps >= 1) {
+            document.getElementById('time3').textContent = '1 天 (晉升熟記)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else {
+            const nextGood = Math.max(1, Math.round(st.intervalDays * st.ease));
+            const nextEasy = Math.max(4, Math.round(st.intervalDays * st.ease * 1.3));
+            document.getElementById('time3').textContent = `${nextGood} 天`;
+            document.getElementById('time4').textContent = `${nextEasy} 天`;
+        }
+    }
+
+    function selectOption(letter) {
+        if (isRevealed) return;
+        revealAnswer(letter);
+    }
+
+    function revealAnswer(selectedLetter = null) {
+        if (isRevealed) return;
+        isRevealed = true;
+
+        const correctLetter = currentCard.a;
+        const correctIdx = correctLetter.charCodeAt(0) - 65;
+        const optButtons = document.querySelectorAll('.opt-btn');
+
+        optButtons.forEach((btn, idx) => {
+            btn.disabled = true;
+            const l = String.fromCharCode(65 + idx);
+            if (l === correctLetter) {
+                btn.classList.add('correct-choice');
+            } else if (selectedLetter && l === selectedLetter && selectedLetter !== correctLetter) {
+                btn.classList.add('wrong-choice');
+            }
+        });
+
+        const banner = document.getElementById('correctBanner');
+        if (selectedLetter) {
+            if (selectedLetter === correctLetter) {
+                banner.textContent = `🎉 答對了！正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate3').classList.add('recommended');
+            } else {
+                banner.textContent = `❌ 答錯了（您選 ${selectedLetter}）｜正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate1').classList.add('recommended');
+            }
+        } else {
+            banner.textContent = `💡 正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+        }
+
+        document.getElementById('cardNote').textContent = currentCard.note;
+        document.getElementById('btnShowAnswer').style.display = 'none';
+        document.getElementById('answerPanel').style.display = 'block';
+    }
+
+    function rateCard(rating) {
+        if (!currentCard) return;
+        sessionStep++;
+        const st = srsState[currentCard.id];
+        const now = Date.now();
+        const DAY_MS = 86400 * 1000;
+
+        if (rating === 1) {
+            st.status = 'learning';
+            st.reps = 0;
+            st.lapses += 1;
+            st.ease = Math.max(1.3, st.ease - 0.2);
+            st.intervalDays = 0;
+            st.dueStep = sessionStep + 3;
+        } else if (rating === 2) {
+            st.status = 'learning';
+            st.ease = Math.max(1.3, st.ease - 0.15);
+            st.dueStep = sessionStep + 6;
+        } else if (rating === 3) {
+            if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+                st.status = 'learning';
+                st.reps = 1;
+                st.dueStep = sessionStep + 12;
+            } else if (st.status === 'learning' && st.reps >= 1) {
+                st.status = 'graduated';
+                st.reps += 1;
+                st.intervalDays = 1;
+                st.dueTime = now + 1 * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            } else {
+                st.reps += 1;
+                st.intervalDays = Math.max(1, Math.round(st.intervalDays * st.ease));
+                st.dueTime = now + st.intervalDays * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            }
+        } else if (rating === 4) {
+            st.status = 'graduated';
+            st.reps += 1;
+            st.ease = Math.min(3.0, st.ease + 0.15);
+            st.intervalDays = st.intervalDays > 0 ? Math.max(4, Math.round(st.intervalDays * st.ease * 1.3)) : 4;
+            st.dueTime = now + st.intervalDays * DAY_MS;
+            st.dueStep = sessionStep + 9999;
+        }
+
+        saveSRS();
+
+        if (document.getElementById('modeSelect').value === 'SEQ') {
+            seqIndex++;
+        }
+
+        renderCard(pickNextCard());
+    }
+
+    function onFilterChange() {
+        seqIndex = 0;
+        renderCard(pickNextCard());
+        if (document.getElementById('browserPanel').style.display === 'block') {
+            renderBrowserTable();
+        }
+    }
+
+    function toggleBrowser() {
+        const panel = document.getElementById('browserPanel');
+        const cardView = document.getElementById('flashcardView');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            cardView.style.display = 'flex';
+        } else {
+            renderBrowserTable();
+            panel.style.display = 'block';
+            cardView.style.display = 'none';
+        }
+    }
+
+    function renderBrowserTable() {
+        const tbody = document.getElementById('browserBody');
+        const pool = getFilteredPool();
+        let html = '';
+
+        pool.forEach(c => {
+            const st = srsState[c.id];
+            const ansIdx = c.a.charCodeAt(0) - 65;
+            let badgeHtml = '';
+            if (st.status === 'new') badgeHtml = '<span class="badge badge-status-new">新卡片</span>';
+            else if (st.status === 'learning') badgeHtml = '<span class="badge badge-status-learning">學習中</span>';
+            else badgeHtml = `<span class="badge badge-status-graduated">熟記(${st.intervalDays}d)</span>`;
+
+            html += `
+                <tr class="browser-row" onclick="jumpToCard(${c.id})">
+                    <td><b>#${c.id}</b></td>
+                    <td><span style="font-size:0.8rem;color:#0369a1;font-weight:700;">${c.cat}</span></td>
+                    <td>
+                        <div style="font-weight:700;">${c.q}</div>
+                        <div style="font-size:0.84rem;color:#15803d;">正解：(${c.a}) ${c.options[ansIdx]}</div>
+                    </td>
+                    <td>${badgeHtml}</td>
+                    <td>${st.reps} / <span style="color:#dc2626;font-weight:700;">${st.lapses}</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function jumpToCard(id) {
+        const found = RAW_CARDS.find(c => c.id === id);
+        if (found) {
+            document.getElementById('browserPanel').style.display = 'none';
+            document.getElementById('flashcardView').style.display = 'flex';
+            renderCard(found);
+        }
+    }
+
+    function resetProgress() {
+        if (confirm('確定要清除第四章全部 43 題的 Anki 學習紀錄，將所有卡片重置為「未學新卡」嗎？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            srsState = {};
+            sessionStep = 0;
+            seqIndex = 0;
+            initSRS();
+            renderCard(pickNextCard());
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.getElementById('browserPanel').style.display === 'block') return;
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (!isRevealed) revealAnswer();
+        } else if (isRevealed) {
+            if (e.key === '1') rateCard(1);
+            else if (e.key === '2') rateCard(2);
+            else if (e.key === '3') rateCard(3);
+            else if (e.key === '4') rateCard(4);
+        }
+    });
+
+    window.onload = () => {
+        initSRS();
+        renderCard(pickNextCard());
+    };
+</script>
+
+</body>
+</html>

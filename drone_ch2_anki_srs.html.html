@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二章：基礎飛行原理（172題）｜Anki 間隔重複 (SRS) 記憶卡系統</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #dbeafe;
+            --secondary: #0284c7;
+            --again: #dc2626;
+            --again-bg: #fef2f2;
+            --hard: #ea580c;
+            --hard-bg: #fff7ed;
+            --good: #16a34a;
+            --good-bg: #f0fdf4;
+            --easy: #2563eb;
+            --easy-bg: #eff6ff;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0284c7 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        header h1 {
+            font-size: 1.55rem;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        header p {
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+        /* Top Dashboard */
+        .srs-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .stat-num {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .stat-new .stat-num { color: #2563eb; }
+        .stat-learn .stat-num { color: #dc2626; }
+        .stat-review .stat-num { color: #d97706; }
+        .stat-grad .stat-num { color: #16a34a; }
+
+        /* Controls Bar */
+        .toolbar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        select, .btn-tool {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .btn-tool:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* Progress Bar */
+        .progress-wrap {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #16a34a);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Flashcard Area */
+        .flashcard {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+            padding: 28px 26px;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .card-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .badge-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+        .badge-no { background: #0f172a; color: white; }
+        .badge-cat { background: #e0f2fe; color: #0369a1; }
+        .badge-status-new { background: #dbeafe; color: #1d4ed8; }
+        .badge-status-learning { background: #fee2e2; color: #b91c1c; }
+        .badge-status-graduated { background: #dcfce7; color: #15803d; }
+        .srs-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            line-height: 1.55;
+        }
+
+        /* Interactive Options on Card Front */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .opt-btn {
+            text-align: left;
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .opt-btn:hover:not(:disabled) {
+            border-color: #60a5fa;
+            background: #eff6ff;
+        }
+        .opt-btn.correct-choice {
+            border-color: #16a34a !important;
+            background: #dcfce7 !important;
+            color: #14532d !important;
+        }
+        .opt-btn.wrong-choice {
+            border-color: #dc2626 !important;
+            background: #fee2e2 !important;
+            color: #7f1d1d !important;
+        }
+        .opt-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .opt-btn.correct-choice .opt-letter {
+            background: #16a34a;
+            color: white;
+        }
+        .opt-btn.wrong-choice .opt-letter {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Answer & Explanation Back Panel */
+        .answer-panel {
+            display: none;
+            background: #f8fafc;
+            border-top: 2px dashed #cbd5e1;
+            margin-top: 8px;
+            padding-top: 18px;
+            animation: fadeIn 0.22s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .note-box {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 0.98rem;
+            color: #78350f;
+        }
+        .note-box strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.94rem;
+        }
+
+        /* Flip Button */
+        .btn-flip {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.08rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+            transition: background 0.2s;
+        }
+        .btn-flip:hover { background: #1d4ed8; }
+
+        /* Anki 4 Rating Buttons */
+        .anki-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .anki-btn {
+            padding: 12px 8px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .anki-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .anki-btn.recommended {
+            outline: 3px solid #0f172a;
+            outline-offset: 2px;
+        }
+        .anki-time {
+            font-size: 0.78rem;
+            font-weight: 700;
+            opacity: 0.85;
+        }
+        .anki-title {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .anki-sub {
+            font-size: 0.74rem;
+            opacity: 0.8;
+        }
+        .btn-again { background: var(--again-bg); color: var(--again); border-color: #fecaca; }
+        .btn-hard { background: var(--hard-bg); color: var(--hard); border-color: #fed7aa; }
+        .btn-good { background: var(--good-bg); color: var(--good); border-color: #bbf7d0; }
+        .btn-easy { background: var(--easy-bg); color: var(--easy); border-color: #bfdbfe; }
+
+        .shortcut-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        /* Deck Browser Modal / Section */
+        .browser-panel {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 22px;
+            margin-top: 18px;
+        }
+        .browser-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+        .browser-table th, .browser-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 8px;
+            text-align: left;
+        }
+        .browser-table th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .browser-row:hover {
+            background: #eff6ff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .srs-dashboard { grid-template-columns: repeat(2, 1fr); }
+            .anki-buttons { grid-template-columns: repeat(2, 1fr); }
+            .question-title { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>第二章：基礎飛行原理（172 題）｜Anki 間隔重複 (SRS) 記憶卡系統</h1>
+    <p>全題庫比重最高章節（佔 44%）｜結合 SM-2 間隔重複演算法、8 大考區分類與逐題破題口訣</p>
+</header>
+
+<div class="container">
+    <!-- SRS Statistics Dashboard -->
+    <div class="srs-dashboard">
+        <div class="stat-card stat-new">
+            <div class="stat-num" id="countNew">172</div>
+            <div class="stat-label">🆕 未學新卡 (New)</div>
+        </div>
+        <div class="stat-card stat-learn">
+            <div class="stat-num" id="countLearning">0</div>
+            <div class="stat-label">🔥 學習/重來中 (Learning)</div>
+        </div>
+        <div class="stat-card stat-review">
+            <div class="stat-num" id="countDue">0</div>
+            <div class="stat-label">⏰ 到期需複習 (Due)</div>
+        </div>
+        <div class="stat-card stat-grad">
+            <div class="stat-num" id="countGrad">0</div>
+            <div class="stat-label">✅ 已熟記精通 (Mastered)</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-wrap" title="熟記精通進度">
+        <div class="progress-fill" id="masteryBar"></div>
+    </div>
+
+    <!-- Filter & Mode Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <label for="catFilter" style="font-weight:700;font-size:0.9rem;">主題篩選：</label>
+            <select id="catFilter" onchange="onFilterChange()">
+                <option value="ALL">全部主題（共 172 題）</option>
+                <option value="1. 系統架構：飛控、導航、動力與通訊">1. 系統架構：飛控、導航、動力與通訊（22 題）</option>
+                <option value="2. 航空器定義與三大機型特性">2. 航空器定義與三大機型特性（8 題）</option>
+                <option value="3. 牛頓定律、四力、柏努利與螺旋槳">3. 牛頓定律、四力、柏努利與螺旋槳（25 題）</option>
+                <option value="4. 各類阻力與升力/阻力影響因素">4. 各類阻力與升力/阻力影響因素（31 題）</option>
+                <option value="5. 無人飛機構造、三軸舵面與穩定性">5. 無人飛機構造、三軸舵面與穩定性（32 題）</option>
+                <option value="6. 無人直昇機原理與基本動作">6. 無人直昇機原理與基本動作（20 題）</option>
+                <option value="7. 無人多旋翼機結構與操控特性">7. 無人多旋翼機結構與操控特性（7 題）</option>
+                <option value="8. 載重平衡：重心位置與重量影響">8. 載重平衡：重心位置與重量影響（27 題）</option>
+            </select>
+
+            <select id="modeSelect" onchange="onFilterChange()">
+                <option value="SRS">🎯 Anki 智能排程（優先複習到期＋新卡）</option>
+                <option value="WEAK">🔥 弱點/錯題特訓（只刷學習中與曾答錯題）</option>
+                <option value="SEQ">📖 依題號順序瀏覽（第 1 題 ～ 第 172 題）</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn-tool" onclick="toggleBrowser()" id="btnBrowser">📋 題庫熟練度總覽</button>
+            <button class="btn-tool" onclick="resetProgress()" style="color:#dc2626;border-color:#fca5a5;">🗑️ 重置進度</button>
+        </div>
+    </div>
+
+    <!-- Main Flashcard View -->
+    <div class="flashcard" id="flashcardView">
+        <div>
+            <div class="card-top-bar">
+                <div class="badge-group">
+                    <span class="badge badge-no" id="cardNo">第二章 第 1 題</span>
+                    <span class="badge badge-cat" id="cardCat">1. 系統架構</span>
+                    <span class="badge badge-status-new" id="cardStatus">新卡片</span>
+                </div>
+                <div class="srs-meta" id="cardMeta">難度因子 EF: 2.50 ｜ 連對: 0 ｜ 遺忘: 0</div>
+            </div>
+
+            <div class="question-title" id="cardQuestion">載入中...</div>
+
+            <div class="options-grid" id="cardOptions"></div>
+        </div>
+
+        <div>
+            <button class="btn-flip" id="btnShowAnswer" onclick="revealAnswer()">👀 顯示答案與解析（或直接點擊上方選項作答 / 按空白鍵）</button>
+
+            <div class="answer-panel" id="answerPanel">
+                <div class="note-box">
+                    <strong id="correctBanner">✅ 正確答案：(A)</strong>
+                    <span id="cardNote"></span>
+                </div>
+
+                <div class="anki-buttons">
+                    <button class="anki-btn btn-again" id="btnRate1" onclick="rateCard(1)">
+                        <span class="anki-time" id="time1">&lt; 1 分鐘 (3題後)</span>
+                        <span class="anki-title">1. 重來 (Again)</span>
+                        <span class="anki-sub">忘記 / 答錯</span>
+                    </button>
+                    <button class="anki-btn btn-hard" id="btnRate2" onclick="rateCard(2)">
+                        <span class="anki-time" id="time2">&lt; 6 分鐘 (6題後)</span>
+                        <span class="anki-title">2. 困難 (Hard)</span>
+                        <span class="anki-sub">猶豫 / 靠猜對</span>
+                    </button>
+                    <button class="anki-btn btn-good" id="btnRate3" onclick="rateCard(3)">
+                        <span class="anki-time" id="time3">10 分鐘 / 晉級</span>
+                        <span class="anki-title">3. 良好 (Good)</span>
+                        <span class="anki-sub">正常回想答對</span>
+                    </button>
+                    <button class="anki-btn btn-easy" id="btnRate4" onclick="rateCard(4)">
+                        <span class="anki-time" id="time4">4 天 (直接熟記)</span>
+                        <span class="anki-title">4. 簡單 (Easy)</span>
+                        <span class="anki-sub">秒答 / 完全精通</span>
+                    </button>
+                </div>
+                <div class="shortcut-hint">⌨️ 鍵盤快捷鍵：按 <b>Space</b> 翻面 ｜ 按數字鍵 <b>1</b> (重來)、<b>2</b> (困難)、<b>3</b> (良好)、<b>4</b> (簡單) 評分</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Browser Table -->
+    <div class="browser-panel" id="browserPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <h3 style="color:var(--primary);">📋 第二章：基礎飛行原理（172 題）SRS 記憶狀態總覽（點擊任一題可直接抽考）</h3>
+            <button class="btn-tool" onclick="toggleBrowser()">返回記憶卡</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="browser-table">
+                <thead>
+                    <tr>
+                        <th style="width:65px;">題號</th>
+                        <th style="width:170px;">子主題</th>
+                        <th>題目內容與正解</th>
+                        <th style="width:95px;">狀態</th>
+                        <th style="width:90px;">連對/遺忘</th>
+                    </tr>
+                </thead>
+                <tbody id="browserBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const RAW_CARDS = [{"id": 1, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機系統包含下列哪項主要次系統?", "options": ["遙控無人機體。", "遙控設備。", "通訊及控制信號鏈路。", "以上皆是。"], "a": "D", "note": "遙控無人機系統三大次系統：【遙控無人機體】、【遙控設備】、【通訊及控制信號鏈路】（選以上皆是）。"}, {"id": 2, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機系統之飛行載具,包括下列哪些項目?", "options": ["機體、負載設備及酬載。", "機體、燃料或電池。", "機體、燃料或電池、負載設備及酬載。", "機體、燃料或電池、負載設備及酬載、遙控設備。"], "a": "C", "note": "⚠️必考陷阱：題目問的是天上飛的「飛行載具」，包含【機體、燃料或電池、負載設備及酬載】。千萬別選包含地面「遙控設備」的 (D)！"}, {"id": 3, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機系統之地面控制站的硬體設備,包括下列哪個項目?", "options": ["訊號傳輸設備。", "指令傳輸設備。", "資訊接收分析設備。", "以上皆是。"], "a": "D", "note": "地面控制站硬體包含：訊號傳輸設備、指令傳輸設備、資訊接收分析設備（選以上皆是）。"}, {"id": 4, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人飛機起飛時,除跑道起飛外,還可運用下列哪項裝置?", "options": ["火箭助推。", "彈射軌道發射。", "人力拋擲。", "以上皆是。"], "a": "D", "note": "定翼型無人飛機除跑道起飛外，輔助起飛方式有：火箭助推、彈射軌道發射、人力拋擲（選以上皆是）。"}, {"id": 5, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人飛機降落時,除跑道降落外,也可運用下列哪項方式?", "options": ["攔截網。", "纜線勾鎖。", "降落傘。", "以上皆是。"], "a": "D", "note": "定翼型無人飛機除跑道降落外，輔助降落回收方式有：攔截網、纜線勾鎖、降落傘（選以上皆是）。"}, {"id": 6, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機許多層面都還是要由人員來掌握及操控,所以下列哪個因素在整體飛行過程中佔了很重要的一部分?", "options": ["人為因素。", "運氣因素。", "社會因素。", "歷史因素。"], "a": "A", "note": "無人機許多層面仍須由人員掌握及操控，故【人為因素】在整體飛行過程中佔了極重要的一部分。"}, {"id": 7, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "完整之飛控系統包括下列哪個部分?", "options": ["感測器。", "機載計算機。", "伺服器。", "以上皆是。"], "a": "D", "note": "完整之飛控系統三大硬體組成：【感測器】（輸入）、【機載計算機】（處理）、【伺服器】（輸出執行）（選以上皆是）。"}, {"id": 8, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "完整之飛控系統可實現遙控無人機下列哪項功能?", "options": ["姿態穩定和控制。", "任務管理。", "緊急控制模式。", "以上皆是。"], "a": "D", "note": "飛控系統三大核心功能：姿態穩定和控制、任務管理、緊急控制模式（選以上皆是）。"}, {"id": 9, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "下列哪個是飛行控制系統的輸入裝置,用以保持控制精度?", "options": ["機載計算機。", "感測器。", "伺服器。", "以上皆是。"], "a": "B", "note": "⚠️必考陷阱：飛控系統中用以偵測狀態、保持控制精度的「輸入裝置」是 (B)【感測器】！（機載計算機是運算核心，伺服器是執行機構，勿選以上皆是）。"}, {"id": 10, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "導航系統提供遙控無人機哪項資訊?", "options": ["位置。", "速度。", "飛行姿態。", "以上皆是。"], "a": "D", "note": "導航系統負責向無人機提供三大資訊：【位置、速度、飛行姿態】（選以上皆是）。"}, {"id": 11, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機導航系統主要分為下列哪兩種?", "options": ["非自主(如GPS)和自主(慣性導航)。", "高精度和一般精度。", "高抗干擾和低抗干擾。", "全自動和半自動。"], "a": "A", "note": "導航系統兩大分類：【非自主（如 GPS，靠外部衛星）】與【自主（如慣性導航 INS，靠內部陀螺儀/加速度計）】。"}, {"id": 12, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機非自主(如GPS)導航系統有下列哪個缺點?", "options": ["操作困難。", "易受干擾。", "誤差積累增大。", "以上皆是。"], "a": "B", "note": "⚠️必考對比：非自主導航（如 GPS）依賴外部衛星訊號，主要缺點是 (B)【易受干擾】（勿選以上皆是）。"}, {"id": 13, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機自主(慣性導航)導航系統有下列哪個缺點?", "options": ["操作困難。", "易受干擾。", "誤差積累增大。", "以上皆是。"], "a": "C", "note": "⚠️必考對比：自主導航（慣性導航 INS）不靠外部訊號，但積分運算隨時間漂移，主要缺點是 (C)【誤差積累增大】（勿選以上皆是）。"}, {"id": 14, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機將朝向下列哪個方向繼續發展?", "options": ["高精度。", "高可靠度。", "高抗干擾。", "以上皆是。"], "a": "D", "note": "無人機未來技術持續朝向：高精度、高可靠度、高抗干擾發展（選以上皆是）。"}, {"id": 15, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機導航與自動避讓系統的發展,包括下列哪項重點?", "options": ["慣性導航。", "多感應器融合、GPS。", "光電系統技術整合。", "以上皆是。"], "a": "D", "note": "導航與自動避讓系統發展重點：慣性導航、多感應器融合与 GPS、光電系統技術整合（選以上皆是）。"}, {"id": 16, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機的動力系統,都朝向下列哪個方向發展?", "options": ["體積小、重量輕。", "成本低。", "可靠度高。", "以上皆是。"], "a": "D", "note": "無人機動力系統發展趨勢：體積小與重量輕、成本低、可靠度高（選以上皆是）。"}, {"id": 17, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機的能量來源可以包括下列哪項?", "options": ["太陽能。", "氫能。", "鋰電池。", "以上皆是。"], "a": "D", "note": "無人機能量來源包含：太陽能、氫能、鋰電池等（選以上皆是）。"}, {"id": 18, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "負責對遙控無人機之命令與控制、資料鏈路等工作的,是下列哪個系統?", "options": ["動力系統。", "無線通訊系統。", "導航系統。", "飛行控制系統。"], "a": "B", "note": "關鍵字「命令與控制、資料鏈路」＝負責天地之間訊號傳輸的【無線通訊系統】。"}, {"id": 19, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機控制鏈路為保密與抗干擾基本上已全面採行下列哪種方式?", "options": ["類比化。", "模組化。", "數位化。", "離散化。"], "a": "C", "note": "⚡高頻易錯題：控制鏈路（遙控指令）為了保密（加密）與抗干擾（跳頻/糾錯），已全面採行 (C)【數位化】！（注意不是離散化）。"}, {"id": 20, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機的圖傳主要資料傳輸形態有下列哪幾種方式?", "options": ["高速、寬頻。", "類比、數位。", "單工、衛星。", "雙工、衛星。"], "a": "B", "note": "⚡對比記憶：控制鏈路全面採「數位化」；而圖傳（影像傳輸）資料傳輸形態則分為【類比、數位】兩種方式。"}, {"id": 21, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "遙控無人機的通訊技術朝向下列哪個方向發展?", "options": ["高速、寬頻。", "保密。", "抗干擾。", "以上皆是。"], "a": "D", "note": "現代無人機通訊技術三大發展方向：高速與寬頻、保密、抗干擾（選以上皆是）。"}, {"id": 22, "cat": "1. 系統架構：飛控、導航、動力與通訊", "q": "隨著機載感測器精度和任務複雜度的上升,機載處理器的下列哪項需求也將隨之提高?", "options": ["運算需求。", "保密需求。", "抗干擾需求。", "重量需求。"], "a": "A", "note": "隨著機載感測器精度與任務複雜度上升，機載處理器（CPU/計算機）的【運算需求】隨之提高。"}, {"id": 23, "cat": "2. 航空器定義與三大機型特性", "q": "所謂航空器,係指任何藉空氣之下列哪種力,得以飛航於大氣中之器物?", "options": ["摩擦力。", "靜電力。", "反作用力。", "以上皆是。"], "a": "C", "note": "民航法規與航空學定義：航空器係指任何藉空氣之【反作用力】得以飛航於大氣中之器物。"}, {"id": 24, "cat": "2. 航空器定義與三大機型特性", "q": "遙控無人機比空氣重,無法只藉由空氣的浮力而上升,需要相對應的下列哪個項目在空中飛行?", "options": ["能量。", "機身外表顏色。", "起落架材質。", "以上皆是。"], "a": "A", "note": "無人機比空氣重（重於空氣之航空器），無法只靠浮力上升，必須有相對應的【能量】在空中飛行。"}, {"id": 25, "cat": "2. 航空器定義與三大機型特性", "q": "航空器利用噴射推力或是螺旋槳的拉力,使航空器產生下列哪種力而在空中飛行?", "options": ["內力。", "升力。", "彈力。", "以上皆是。"], "a": "B", "note": "航空器利用噴射推力或螺旋槳拉力往前帶動氣流，使機翼或旋翼產生【升力】而在空中飛行。"}, {"id": 26, "cat": "2. 航空器定義與三大機型特性", "q": "飛行速度快、酬載大、飛行效率高,不需太複雜控制,就可自行抵抗氣流而自行保持穩定的飛行的遙控無人機,是下列哪種遙控無人機?", "options": ["遙控無人直昇機。", "遙控無人飛機。", "遙控無人多旋翼機。", "以上皆是。"], "a": "B", "note": "三大機型特徵：速度快、酬載大、飛行效率高，可自行抵抗氣流保持穩定飛行的，是【遙控無人飛機】（定翼機）。"}, {"id": 27, "cat": "2. 航空器定義與三大機型特性", "q": "遙控無人飛機缺點是需要有下列哪個項目供起降之用?", "options": ["相當的跑道高度。", "相當的跑道溫度。", "相當的跑道長度。", "以上皆是。"], "a": "C", "note": "遙控無人飛機（定翼機）的主要缺點是需要有【相當的跑道長度】供起飛與降落滑跑之用。"}, {"id": 28, "cat": "2. 航空器定義與三大機型特性", "q": "透過旋翼槳葉產生升力,同時也能產生推力的遙控無人機,是下列哪種遙控無人機?", "options": ["遙控無人直昇機。", "遙控無人飛機。", "遙控無人多旋翼機。", "以上皆是。"], "a": "A", "note": "⚡必考陷阱：題目看到「透過旋翼槳葉產生升力，同時也能產生推力」，唯一標準答案是 (A)【遙控無人直昇機】（靠十字盤週期變距改變槳葉攻角同時產生升力與推力，勿選多旋翼機！）。"}, {"id": 29, "cat": "2. 航空器定義與三大機型特性", "q": "無人直昇機可以執行下列哪個動作?", "options": ["自由調整姿態。", "定點盤旋。", "起飛與落地。", "以上皆是。"], "a": "D", "note": "無人直昇機具備：自由調整姿態、定點盤旋、垂直起飛與落地能力（選以上皆是）。"}, {"id": 30, "cat": "2. 航空器定義與三大機型特性", "q": "透過三個以上垂直旋翼間協調來控制姿態,同樣不需跑道,可垂直起降、空中懸停等的遙控無人機,是下列哪種遙控無人機?", "options": ["無人多旋翼機。", "無人直昇機。", "無人飛機。", "以上皆是。"], "a": "A", "note": "⚡對比第28題：看到關鍵字「透過三個以上垂直旋翼間協調來控制姿態」，答案才是 (A)【無人多旋翼機】。"}, {"id": 31, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "操作人只要在遙控設備上施加桿力,就可改變遙控無人機的下列哪些性能?", "options": ["重量或重心。", "外形或顏色。", "方向或速度。", "翼展與翼弦。"], "a": "C", "note": "操作人在遙控設備上施加桿力（打桿），可改變無人機的飛行【方向或速度】。"}, {"id": 32, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "若無人飛機在地面上靜止,依牛頓運動定律,下列哪個特性會使得飛機保持靜止?", "options": ["慣性。", "磁性。", "氣壓。", "空氣濕度。"], "a": "A", "note": "牛頓第一運動定律（慣性定律）：靜止的物體保持靜止、運動的物體保持等速直線運動，此特性稱為【慣性】。"}, {"id": 33, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "若無人飛機保持固定的空速以直線行進,依牛頓運動定律,下列哪個特性會使得飛機持續保持穩定的直線飛行?", "options": ["磁性。", "氣壓。", "慣性。", "空氣濕度。"], "a": "C", "note": "牛頓第一運動定律：使保持固定空速直線行進的飛機持續保持穩定直線飛行的特性，稱為【慣性】。"}, {"id": 34, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "無人飛機於頂風飛行時,地面速度就會有下列哪種變化?", "options": ["變快。", "不變。", "變慢。", "以上皆非。"], "a": "C", "note": "地速＝空速－頂風風速。於頂風（逆風）飛行時，相對於地面的速度（地面速度）會【變慢】。"}, {"id": 35, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "若風從無人飛機前方的任一方向吹來,倘若飛行員沒有隨之修正,那下列哪個特性就會受到風所施加的力而改變?", "options": ["重量。", "重心。", "航向。", "推力。"], "a": "C", "note": "若風從飛機前方任一方向（側風/斜逆風）吹來且未修正，飛機的【航向】會受風力推偏而改變。"}, {"id": 36, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "噴射機將燃燒的熱氣體往後推送以施加作用力,相對的有相等且相反的下列哪種力,將飛機往前推進?", "options": ["反作用力。", "摩擦力。", "靜電力。", "磁力。"], "a": "A", "note": "牛頓第三運動定律（作用力與反作用力）：噴射機將燃燒熱氣體往後推送，產生相等且相反的【反作用力】將飛機往前推進。"}, {"id": 37, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "遙控無人機在空中飛行時,會受到下列哪些力相互作用的影響?", "options": ["升力、推力。", "推力、阻力。", "阻力、重力。", "以上皆是。"], "a": "D", "note": "飛行四力：升力、推力、阻力、重力相互作用（選以上皆是）。"}, {"id": 38, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "無人飛機推力由下列哪個組件提供?", "options": ["發動機。", "起落架。", "機翼。", "機身。"], "a": "A", "note": "飛行四力來源：向前的「推力」由【發動機】（動力系統）提供。"}, {"id": 39, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "無人飛機阻力由下列哪個項目產生?", "options": ["地心引力。", "重心。", "空氣。", "發動機。"], "a": "C", "note": "飛行四力來源：向後的「阻力」是由【空氣】與機體相對運動所產生。"}, {"id": 40, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "無人飛機升力由下列哪個項目提供?", "options": ["起落架。", "機翼。", "重心。", "地心引力。"], "a": "B", "note": "飛行四力來源：向上的「升力」由無人飛機的【機翼】提供。"}, {"id": 41, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "重力由下列哪個項目產生?", "options": ["空氣。", "地心引力。", "發動機。", "機翼。"], "a": "B", "note": "飛行四力來源：向下的「重力」由【地心引力】產生。"}, {"id": 42, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "飛機等速直線飛行時,縱軸(X軸)方向阻力與推力大小相同方向相反,所以有下列哪種情況?", "options": ["橫軸(Y軸)方向合力為零,飛機無升降起伏。", "垂直軸(Z軸)方向合力為零,飛機無偏航的姿態。", "縱軸(X軸)方向合力為零,飛機速度不變。", "以上皆是。"], "a": "C", "note": "前後方向對應「縱軸 (X軸)」：當阻力與推力大小相同、方向相反時，【縱軸(X軸)方向合力為零，飛機速度不變】。"}, {"id": 43, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "飛機高度保持時,垂直軸(Z軸)方向升力與重力大小相同方向相反,所以有下列哪種情況?", "options": ["橫軸(Y軸)方向合力為零,飛機無偏航的姿態。", "垂直軸(Z軸)方向合力為零,飛機無升降起伏。", "縱軸(X軸)方向合力為零,飛機速度不變。", "以上皆是。"], "a": "B", "note": "上下方向對應「垂直軸 (Z軸)」：當升力與重力大小相同、方向相反時，【垂直軸(Z軸)方向合力為零，飛機無升降起伏】。"}, {"id": 44, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "連續性定理闡述了流體在流動中,下列哪些項目之間的關係?", "options": ["流速和管道切面。", "流速和溫度。", "管道切面和溫度。", "溫度和壓力。"], "a": "A", "note": "流體力學【連續性定理】（質量守恆 $A_1 V_1 = A_2 V_2$）：直接闡述流體流動中【流速和管道切面（截面積）】之間的反比關係。"}, {"id": 45, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "連續性定理闡述了流體在流動中,流速和管道切面相關,而且下列哪些項目也相關?", "options": ["流速和壓力。", "流速和溫度。", "管道切面和溫度。", "溫度和壓力。"], "a": "A", "note": "【連續性定理】除了說明流速與管道切面相關外，進一步連結柏努利定律，說明【流速和壓力】也相關。"}, {"id": 46, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "柏努利定律說明流體在一個管道中流動時,有下列哪種現象?", "options": ["流速大的地方壓力大,流速小的地方壓力小。", "流速大的地方壓力大,流速小的地方壓力也大。", "流速大的地方壓力小,流速小的地方壓力大。", "流速大的地方壓力小,流速小的地方壓力也小。"], "a": "C", "note": "【柏努利定律】核心口訣：【流速大的地方壓力小，流速小的地方壓力大】（機翼上表面流速快壓力小，下表面流速慢壓力大）。"}, {"id": 47, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "柏努利定律目的是要闡述流體在流動中時,下列哪些項目間的關係?", "options": ["流速和溫度。", "流速和壓力。", "溫度和壓力。", "以上皆非。"], "a": "B", "note": "【柏努利定律】的核心目的，就是闡述流體在流動中【流速和壓力】之間的關係。"}, {"id": 48, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "柏努利定律中提到,如果流體的速度越快,流體中的壓力就會有下列哪種現象?", "options": ["越小。", "越大。", "不變。", "有時越小有時越大。"], "a": "A", "note": "依柏努利定律，流體的速度越快，流體中的靜壓力就會【越小】。"}, {"id": 49, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "遙控無人機的機翼或旋翼是下列哪種外力主要產生的地方?", "options": ["阻力。", "升力。", "推力。", "重力。"], "a": "B", "note": "無人機的「機翼」或「旋翼」是產生【升力】的主要部位。"}, {"id": 50, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "基於連續性定理、柏努利定律兩個理論,我們可以知道機翼上、下表面會出現下列哪種現象?", "options": ["溫度差。", "壓力差。", "濕度差。", "比熱差。"], "a": "B", "note": "基於連續性定理與柏努利定律，機翼上表面流速快壓力小、下表面流速慢壓力大，上下表面出現【壓力差】。"}, {"id": 51, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "垂直於相對氣流方向的壓力差之總和就是下列哪種外力?", "options": ["槳葉本身的攻角設計。", "空氣的阻力。", "機翼的升力。", "地心引力。"], "a": "C", "note": "機翼上下表面垂直於相對氣流方向的壓力差之總和，就是【機翼的升力】。"}, {"id": 52, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "螺旋槳產生的推力是藉由下列哪個項目而成?", "options": ["槳葉本身的攻角設計。", "螺旋槳轉速。", "以上皆是。", "以上皆非。"], "a": "C", "note": "螺旋槳產生的推力大小，同時取決於【槳葉本身的攻角設計】與【螺旋槳轉速】（選以上皆是）。"}, {"id": 53, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "螺旋槳轉速通常以下列哪個項目來表示?", "options": ["每秒徑度 (rad/s)。", "每分鐘轉數(RPM)。", "赫茲(Hz)。", "每分鐘徑度 (rad/min)。"], "a": "B", "note": "螺旋槳與引擎轉速通常以【每分鐘轉數 (RPM, Revolutions Per Minute)】表示。"}, {"id": 54, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "一般螺旋槳攻角最大的位置在槳葉的下列哪個位置?", "options": ["槳葉根部。", "槳葉葉尖。", "槳葉中尖。", "以上皆是。"], "a": "A", "note": "⚠️必考陷阱：一般螺旋槳攻角（安裝角）最大的位置在 (A)【槳葉根部】！因為根部旋轉半徑最小、切線速度最慢，必須設計最大的幾何攻角才能與高速的葉尖產生均勻推力。"}, {"id": 55, "cat": "3. 牛頓定律、四力、柏努利與螺旋槳", "q": "飛機螺旋槳在原廠設計時,為了設計出高效率的槳葉角度,係依據發動機及飛機的下列哪些特性做為基礎?", "options": ["銷量和價格。", "耗油量和扭力。", "壓縮比和衝程。", "轉速和空速。"], "a": "D", "note": "原廠設計高效率螺旋槳槳葉角度（螺距/扭轉角）時，係依據發動機及飛機的【轉速和空速】做為設計基礎。"}, {"id": 56, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "航空器於飛行中,在空氣裡會有下列哪種外力?", "options": ["各種彈力。", "各種阻力。", "各種磁力。", "各種正向力。"], "a": "B", "note": "航空器於空氣中飛行時，會受到空氣產生的【各種阻力】。"}, {"id": 57, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "某外力係與飛機運動方向相反的空氣動力,會阻礙飛機的前進,它是下列哪種外力?", "options": ["阻力。", "升力。", "重力。", "推力。"], "a": "A", "note": "與飛機運動方向相反、阻礙飛機前進的空氣動力，稱為【阻力】。"}, {"id": 58, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "寄生阻力可分為下列哪幾種?", "options": ["摩擦阻力。", "形狀阻力。", "干擾阻力。", "以上皆是。"], "a": "D", "note": "【寄生阻力】包含三大類：摩擦阻力、形狀阻力、干擾阻力（選以上皆是；注意「誘導阻力」不屬於寄生阻力）。"}, {"id": 59, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "對於高速遙控無人機而言,除了摩擦阻力、形狀阻力、誘導阻力和干擾阻力外,還會另外產生下列哪種阻力?", "options": ["震波阻力。", "布斯曼阻力。", "達倫伯特阻力。", "雷諾阻力。"], "a": "A", "note": "高速遙控無人機接近音速時，空氣被劇烈壓縮產生震波，會額外產生【震波阻力】。"}, {"id": 60, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "下列哪個項目是空氣產生摩擦力的主要物理特性?", "options": ["粘性。", "低汙染。", "PM2.5。", "高揮發性。"], "a": "A", "note": "空氣之所以會與機體表面產生摩擦力，是因為空氣具有【粘性】（黏滯性）這項物理特性。"}, {"id": 61, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "空氣流經飛機表面發生摩擦,產生一個阻止飛機前進的力,這個力就是下列哪種阻力?", "options": ["形狀阻力。", "誘導阻力。", "摩擦阻力。", "干擾阻力。"], "a": "C", "note": "題目關鍵字「空氣流經飛機表面發生摩擦」＝【摩擦阻力】。"}, {"id": 62, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "摩擦阻力的大小,決定於下列哪個特性?", "options": ["空氣的粘性。", "飛機的表面狀況。", "同空氣相接觸的飛機表面積。", "以上皆是。"], "a": "D", "note": "影響摩擦阻力大小的三大因素：空氣的粘性、飛機的表面粗糙狀況、同空氣接觸的飛機表面積（選以上皆是）。"}, {"id": 63, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "空氣粘性越大,摩擦阻力就會有下列哪種變化?", "options": ["越小。", "越大。", "不變。", "以上皆非。"], "a": "B", "note": "成正比關係：空氣粘性越大，摩擦阻力就【越大】。"}, {"id": 64, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "飛機表面越粗糙,摩擦阻力就會有下列哪種變化?", "options": ["越小。", "不變。", "越大。", "以上皆非。"], "a": "C", "note": "成正比關係：飛機表面越粗糙，摩擦阻力就【越大】。"}, {"id": 65, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "飛機表面積越大,摩擦阻力就會有下列哪種變化?", "options": ["越大。", "越小。", "不變。", "以上皆非。"], "a": "A", "note": "成正比關係：接觸空氣的飛機表面積越大，摩擦阻力就【越大】。"}, {"id": 66, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "由前後壓力差形成的阻力叫下列哪種阻力?", "options": ["摩擦阻力。", "形狀阻力。", "誘導阻力。", "干擾阻力。"], "a": "B", "note": "⚡高頻考點：物體在流體中運動時，由「前後壓力差」所形成的壓差阻力，稱為【形狀阻力】（故流線型設計可減少形狀阻力）。"}, {"id": 67, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "人在逆風中行走,會感到阻力的作用,這就是下列哪種阻力?", "options": ["摩擦阻力。", "誘導阻力。", "形狀阻力。", "干擾阻力。"], "a": "C", "note": "⚡高頻考點：人在逆風中行走感受到身體前後壓力差造成的推阻感，屬於【形狀阻力】。"}, {"id": 68, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "遙控無人飛機的機身與尾翼接合部分因氣流相互干擾,都會產生下列哪種阻力?", "options": ["摩擦阻力。", "形狀阻力。", "誘導阻力。", "干擾阻力。"], "a": "D", "note": "題目關鍵字「機身與尾翼接合部分因氣流相互干擾」＝【干擾阻力】。"}, {"id": 69, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "因升力產生渦流而發生的阻力稱為下列哪種阻力?", "options": ["摩擦阻力。", "誘導阻力。", "形狀阻力。", "干擾阻力。"], "a": "B", "note": "題目關鍵字「因升力產生（翼尖）渦流而發生的阻力」＝【誘導阻力】。"}, {"id": 70, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "誘導阻力是遙控無人機為產生下列哪種外力而須付出的一種代價?", "options": ["磁力。", "推力。", "升力。", "重力。"], "a": "C", "note": "誘導阻力是機翼上下表面壓力差在翼尖繞流產生渦流所致，是無人機為產生【升力】而必須付出的代價。"}, {"id": 71, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "干擾阻力是遙控無人機各部分之間因下列哪種因素而產生的一種額外阻力?", "options": ["氣流相互干擾。", "熱流相互作用。", "濕度相互作用。", "磁力相互作用。"], "a": "A", "note": "干擾阻力是無人機各部件交接處因【氣流相互干擾】而產生的額外阻力。"}, {"id": 72, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "干擾阻力容易產生在下列哪些組件之間?", "options": ["機身和機翼、機身和尾翼。", "機翼和外掛載。", "機翼、發動機短艙。", "以上皆是。"], "a": "D", "note": "干擾阻力容易產生在各部件接合處：機身和機翼、機身和尾翼、機翼和外掛載、機翼與發動機短艙之間（選以上皆是）。"}, {"id": 73, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "重力是航空器本身之質量所受的下列哪種外力?", "options": ["磁力。", "地心引力。", "摩擦力。", "靜電力。"], "a": "B", "note": "重力是航空器本身質量所受的【地心引力】。"}, {"id": 74, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "過重的重力對飛行有負面影響,故無人機機身的設計都是採用下列哪種材質?", "options": ["較輕。", "較重。", "時重時輕。", "以上皆非。"], "a": "A", "note": "過重的重力對飛行性能有負面影響，故無人機機身設計皆採用高強度且【較輕】的複合材質。"}, {"id": 75, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "升力和阻力是飛機在空氣之間的下列哪種行為中產生?", "options": ["分子光譜。", "動量守恆。", "相對運動(相對氣流)。", "雷諾傳輸。"], "a": "C", "note": "不論是飛機飛過靜止空氣，或風吹向固定機翼，升力和阻力都是在飛機與空氣間的【相對運動（相對氣流）】中產生。"}, {"id": 76, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "影響升力和阻力的基本因素除了飛機本身的特點,還有下列哪個因素?", "options": ["機翼在氣流中的相對位置(攻角)。", "氣流的速度。", "空氣密度。", "以上皆是。"], "a": "D", "note": "影響升力與阻力的基本因素（升阻力公式 $L = \\frac{1}{2}\\rho V^2 S C_L$）：攻角（影響係數）、氣流速度 $V$、空氣密度 $\\rho$（選以上皆是）。"}, {"id": 77, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "相對氣流方向與翼弦所夾的角度叫下列哪個角?", "options": ["俯仰角。", "滾轉角。", "攻角。", "偏航角。"], "a": "C", "note": "必背定義：「相對氣流方向」與「機翼翼弦線」所夾的角度，稱為【攻角 (Angle of Attack, AOA)】。"}, {"id": 78, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "在飛行速度等其它條件相同的情況下,得到最大升力的攻角,叫做下列哪個項目?", "options": ["理想攻角。", "臨界攻角。", "牛頓攻角。", "萊布尼茲攻角。"], "a": "B", "note": "得到最大升力係數的極限攻角稱為【臨界攻角】（約 15°～18°，一旦超過臨界攻角，上表面氣流分離就會發生「失速」）。"}, {"id": 79, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "在小於臨界攻角範圍內增大攻角,會有下列哪種結果?", "options": ["升力增大。", "升力減少。", "升力不變。", "以上皆非。"], "a": "A", "note": "在「小於臨界攻角」的正常飛行範圍內，增大攻角會使【升力增大】。"}, {"id": 80, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "空氣密度大,相對氣流速度快,升力和阻力會有下列哪種變化?", "options": ["升力越大、阻力越小。", "升力越小、阻力越大。", "升力和阻力越大。", "升力和阻力越小。"], "a": "C", "note": "由公式 $F = \\frac{1}{2}\\rho V^2 S C$ 可知：空氣密度 $\\rho$ 大、相對氣流速度 $V$ 快，【升力和阻力越大】。"}, {"id": 81, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "機翼面積大,升力和阻力會有下列哪種變化?", "options": ["升力越大、阻力越小。", "升力越小、阻力越大。", "升力和阻力越小。", "升力和阻力越大。"], "a": "D", "note": "機翼面積 $S$ 越大，與空氣作用的面積越大，【升力和阻力越大】。"}, {"id": 82, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "升力和阻力與機翼面積大小的關係是下列哪種?", "options": ["都與機翼面積大小成正比。", "都與機翼面積大小成反比。", "都與機翼面積大小的平方成正比。", "都與機翼面積大小的平方成反比。"], "a": "A", "note": "由公式 $F = \\frac{1}{2}\\rho V^2 S C$ 可知：升力和阻力【都與機翼面積大小成正比】（注意：與面積成一次方正比，與速度才是成平方正比！）。"}, {"id": 83, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "機翼形狀對下列哪個項目有很大影響?", "options": ["磁力。", "升力、阻力。", "重力。", "以上皆是。"], "a": "B", "note": "機翼剖面（翼型）與平面形狀，對【升力、阻力】有很大影響。"}, {"id": 84, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "下列哪個項目對升力、阻力有影響?", "options": ["機翼切面形狀的相對厚度、最大厚度位置。", "機翼平面形狀、襟翼和前緣翼縫的位置。", "機翼表面光滑狀況。", "以上皆是。"], "a": "D", "note": "機翼切面相對厚度與最大厚度位置、機翼平面形狀、襟翼與前緣翼縫位置、表面光滑狀況，都會影響升力與阻力（選以上皆是）。"}, {"id": 85, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "遙控無人機表面光滑狀況會影響下列哪種阻力?", "options": ["形狀阻力。", "誘導阻力。", "摩擦阻力。", "干擾阻力。"], "a": "C", "note": "表面光滑狀況直接決定表面粗糙度，影響的是【摩擦阻力】。"}, {"id": 86, "cat": "4. 各類阻力與升力/阻力影響因素", "q": "遙控無人機表面相對光滑,則阻力為下列哪種變化?", "options": ["相對較小。", "相對較大。", "時大時小。", "以上皆非。"], "a": "A", "note": "無人機表面相對光滑，空氣流過時摩擦阻力就【相對較小】。"}, {"id": 87, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "大多數遙控無人機都由下列哪個主要部分組成?", "options": ["機翼、機身、尾翼。", "起降裝置。", "動力系統。", "以上皆是。"], "a": "D", "note": "大多數定翼型無人機由五大主要部分組成：機翼、機身、尾翼、起降裝置（起落架）、動力系統（選以上皆是）。"}, {"id": 88, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機機翼的主要功用是產生下列哪種外力?", "options": ["阻力。", "升力。", "推力。", "重力。"], "a": "B", "note": "無人飛機「機翼」最主要的功用是產生【升力】。"}, {"id": 89, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機機翼除提供升力外,也有下列哪些作用?", "options": ["美觀和舒適。", "潤滑和保濕。", "穩定和操作。", "觀測和定位。"], "a": "C", "note": "機翼除提供升力外，透過上反角與副翼配置，也具有【穩定和操作】的作用。"}, {"id": 90, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "在無人飛機機翼上一般安裝下列哪個物件?", "options": ["光學酬載。", "副翼和襟翼。", "通訊設備。", "導航設備。"], "a": "B", "note": "無人飛機主機翼後緣一般安裝【副翼】（外側控制滾轉）和【襟翼】（內側增加起降升力與阻力）。"}, {"id": 91, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操縱無人飛機副翼可使飛機產生下列哪種結果?", "options": ["滾轉。", "爬升。", "下降。", "偏航。"], "a": "A", "note": "⚡高頻必考題：操縱主機翼兩側的「副翼 (Aileron)」一上一下連動，可使飛機繞縱軸產生 (A)【滾轉 (Roll)】！（爬升/下降是升降舵，偏航是方向舵）。"}, {"id": 92, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機機翼還可安裝下列哪個物件?", "options": ["發動機。", "起落架。", "外掛載。", "以上皆是。"], "a": "D", "note": "無人飛機機翼上除了副翼與襟翼外，還可安裝：發動機、起落架、外掛載（選以上皆是）。"}, {"id": 93, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機機身的主要功用是裝載下列哪個物件?", "options": ["油箱。", "酬載。", "各種設備。", "以上皆是。"], "a": "D", "note": "無人飛機「機身」的主要功用是裝載：油箱（或電池）、酬載、各種機載設備（選以上皆是）。"}, {"id": 94, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機尾翼包括下列哪些物件?", "options": ["大尾翼和小尾翼。", "高速尾翼和低速尾翼。", "水平尾翼和垂直尾翼。", "旋轉尾翼和固定尾翼。"], "a": "C", "note": "無人飛機尾翼結構包含：【水平尾翼和垂直尾翼】。"}, {"id": 95, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機水平尾翼包括下列哪些物件?", "options": ["固定的升降舵和可動的水平安定面。", "固定的水平安定面和可動的升降舵。", "固定的升降舵和水平安定面。", "可動的升降舵和水平安定面。"], "a": "B", "note": "⚠️文字陷阱：看清楚哪個固定、哪個可動！水平尾翼包括「固定的【水平安定面】」和「可動的【升降舵】」。"}, {"id": 96, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機垂直尾翼包括下列哪些物件?", "options": ["固定的方向舵和可動的垂直安定面。", "固定的垂直安定面和可動的方向舵。", "固定的方向舵和垂直安定面。", "可動的方向舵和垂直安定面。"], "a": "B", "note": "⚠️文字陷阱：垂直尾翼包括「固定的【垂直安定面】」和「可動的【方向舵】」。"}, {"id": 97, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機的起落架大都由下列哪些物件組成?", "options": ["減震支柱和機輪。", "蒙皮和鉚釘。", "坡頂桁架和平行弦桁架。", "拉力元件和扭力元件。"], "a": "A", "note": "無人飛機的起落架大都由緩衝落地衝擊的【減震支柱和機輪】組成。"}, {"id": 98, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "起落架的作用是在下列哪個時機支撐無人飛機?", "options": ["起飛時。", "著陸滑跑時。", "地面滑行和停放時。", "以上皆是。"], "a": "D", "note": "起落架的作用是在：起飛時、著陸滑跑時、地面滑行和停放時支撐飛機（選以上皆是）。"}, {"id": 99, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "動力系統主要用來產生使遙控無人機前進的下列哪些力?", "options": ["重力與升力。", "重力與阻力。", "拉力和推力。", "升力與阻力。"], "a": "C", "note": "動力系統主要用來產生使無人機前進的【拉力和推力】（前置螺旋槳產生拉力，後置螺旋槳或噴射引擎產生推力）。"}, {"id": 100, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機常見的動力系統有下列哪個項目?", "options": ["航空活塞式發動機加螺旋槳推進器。", "渦輪噴氣發動機。", "渦輪螺旋槳發動機和渦輪扇或導風扇發動機。", "以上皆是。"], "a": "D", "note": "無人飛機常見動力系統包括：航空活塞式發動機加螺旋槳、渦輪噴氣、渦輪螺旋槳及渦輪扇/導風扇發動機（選以上皆是）。"}, {"id": 101, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "無人飛機上通常不會安裝下列哪種設備?", "options": ["飛行儀表。", "通訊設備、導航設備。", "安全設備。", "以上皆是。"], "a": "A", "note": "⚠️必考陷阱：無人飛機因為機艙內沒有真人飛行員看儀表板，所以機上通常「不會」安裝 (A)【飛行儀表】（飛行數據是透過通訊設備傳回地面控制站顯示）。"}, {"id": 102, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操作人操作油門和操縱桿,控制無人機的操縱面,來達到所想要的下列哪個目的?", "options": ["飛行姿態。", "發動機溫度。", "環境濕度。", "酬載功能。"], "a": "A", "note": "操作人操作油門和操縱桿來控制無人機各操縱舵面，目的是達到想要的【飛行姿態】。"}, {"id": 103, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "想像為一條由前往後穿過航空器的軸,稱之為下列哪個軸?", "options": ["航空器縱軸(X軸)。", "航空器橫軸(Y軸)。", "航空器垂直軸(Z軸)。", "以上皆非。"], "a": "A", "note": "三軸記憶：由前往後（機頭穿到機尾）穿過航空器的軸，稱為【航空器縱軸 (X軸)】（繞 X 軸旋轉即為滾轉 Roll）。"}, {"id": 104, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "除了副翼,航空器的下列哪個組件對於航空器的滾轉也會有影響?", "options": ["升降舵。", "襟翼。", "方向舵。", "小翼。"], "a": "C", "note": "除了副翼主要控制滾轉外，當打【方向舵】產生偏航側滑時，兩側機翼進氣速度不同也會產生次要的滾轉效應（偏航耦合滾轉）。"}, {"id": 105, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "想像為一條上下兩面垂直地穿過航空器的軸,稱之為下列哪個軸?", "options": ["航空器垂直軸(Z軸)。", "航空器縱軸(X軸)。", "航空器橫軸(Y軸)。", "以上皆非。"], "a": "A", "note": "三軸記憶：上下兩面垂直穿過航空器重心的軸，稱為【航空器垂直軸 (Z軸)】（繞 Z 軸旋轉即為偏航 Yaw）。"}, {"id": 106, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "關於遙控無人機的的操作原理,我們首要了解遙控無人飛機的下列哪種特性?", "options": ["平衡性。", "穩定性。", "操縱性。", "以上皆是。"], "a": "D", "note": "遙控無人飛機操作原理三大核心特性：【平衡性、穩定性、操縱性】（選以上皆是）。"}, {"id": 107, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機處於平衡狀態時,是表示下列哪種狀況?", "options": ["其速度的大小和方向都保持不變。", "其發動機的轉速和馬力都保持不變。", "其所有翼面的角度和方向都保持不變。", "其酬載的方向和功能都保持不變。"], "a": "A", "note": "物理學力學平衡定義：處於「平衡狀態」表示合力與合力矩為零，【其速度的大小和方向都保持不變】（等速直線飛行）。"}, {"id": 108, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機穩定性的強弱,一般由下列哪個現象來衡量?", "options": ["擺動衰減時間。", "擺動幅度。", "擺動次數。", "以上皆是。"], "a": "D", "note": "衡量無人機受氣流擾動後「穩定性強弱」的三大指標：擺動衰減時間、擺動幅度、擺動次數（選以上皆是）。"}, {"id": 109, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機的穩定性強,表示下列哪個現象?", "options": ["擺動衰減時間短。", "擺動幅度小。", "擺動次數少。", "以上皆是。"], "a": "D", "note": "穩定性強代表抗擾動恢復快：擺動衰減時間短、擺動幅度小、擺動次數少（選以上皆是）。"}, {"id": 110, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機穩定性的強弱,主要取決於遙控無人機的下列哪個特性?", "options": ["重心位置。", "飛行速度和高度。", "攻角的變化。", "以上皆是。"], "a": "D", "note": "影響無人機穩定性強弱的主要因素：重心位置、飛行速度和高度、攻角的變化（選以上皆是）。"}, {"id": 111, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機在操作人操縱升降舵、方向舵和副翼下改變其飛行狀態的俯仰、方向和橫向之特性,是指遙控無人機的下列哪種特性?", "options": ["操縱性。", "平衡性。", "穩定性。", "以上皆非。"], "a": "A", "note": "操作人操縱升降舵、方向舵和副翼以改變飛行狀態的特性，稱為【操縱性】。"}, {"id": 112, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機操縱性好,表示下列哪個現象?", "options": ["操縱動作簡單。", "操縱省力。", "操縱反應快。", "以上皆是。"], "a": "D", "note": "操縱性好代表：操縱動作簡單、操縱省力、操縱反應快（選以上皆是）。"}, {"id": 113, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "遙控無人機操作有哪四大基本動作?", "options": ["平直飛行、側滑、爬升、下降。", "平直飛行、轉彎、爬升、倒飛。", "平直飛行、轉彎、爬升、下降。", "平直飛行、側滑、懸停、倒飛。"], "a": "C", "note": "無人飛機四大基本飛行動作：【平直飛行、轉彎、爬升、下降】（不含倒飛或側滑）。"}, {"id": 114, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操作遙控無人飛機時,當副翼控制右上左下,機體相對於「機體中心」作下列哪種動作?", "options": ["向上俯仰。", "右偏航。", "右滾。", "左滾。"], "a": "C", "note": "⚡舵面方向秒記：口訣「哪邊副翼向上，就往哪邊滾」！當副翼控制「右上左下」（右翼升力減小下沉、左翼升力增大抬起），機體作【右滾】。"}, {"id": 115, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操作遙控無人飛機時,當副翼控制右下左上,機體相對於「機體中心」作下列哪種動作?", "options": ["向上俯仰。", "右偏航。", "左滾。", "右滾。"], "a": "C", "note": "⚡舵面方向秒記：口訣「哪邊副翼向上，就往哪邊滾」！當副翼控制「右下左上」（左副翼向上），機體作【左滾】。"}, {"id": 116, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操作遙控無人飛機時,當方向舵控制往右,機體相對於「機體中心」作下列哪種動作?", "options": ["向上俯仰。", "右偏航。", "左偏航。", "右滾。"], "a": "B", "note": "方向舵控制偏航：當方向舵控制往右偏轉，機頭即向右擺動，作【右偏航】。"}, {"id": 117, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "操作遙控無人飛機時,當方向舵控制往左,機體相對於「機體中心」作下列哪種動作?", "options": ["右滾。", "左偏航。", "右偏航。", "左滾。"], "a": "B", "note": "方向舵控制偏航：當方向舵控制往左偏轉，機頭即向左擺動，作【左偏航】。"}, {"id": 118, "cat": "5. 無人飛機構造、三軸舵面與穩定性", "q": "控制遙控無人機時,操作人應以相對於下列哪個項目來思考「上」、「下」、「左」、「右」?", "options": ["機體中心。", "地平面。", "操作人自己的虛擬座標。", "以上皆是。"], "a": "A", "note": "⚠️必考陷阱：控制無人機思考上下左右時，必須一律以相對於 (A)【機體中心】來思考（特別是機頭朝向自己對頭飛行時，不可用操作人自己的左右，勿選以上皆是！）。"}, {"id": 119, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機,其主旋翼在旋轉時主要產生下列哪種力?", "options": ["向上的升力。", "向下的升力。", "向前的升力。", "向後的升力。"], "a": "A", "note": "無人直昇機的主旋翼在旋轉時，主要產生【向上的升力】。"}, {"id": 120, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機主旋翼產生升力的原理,類似於下列哪個原理?", "options": ["無人飛機機翼產生升力的原理。", "螺旋槳產生推力的原理。", "以上皆是。", "以上皆非。"], "a": "C", "note": "無人直昇機主旋翼產生升力的空氣動力原理，同時類似於【無人飛機機翼產生升力的原理】與【螺旋槳產生推力的原理】（選以上皆是）。"}, {"id": 121, "cat": "6. 無人直昇機原理與基本動作", "q": "若無人直昇機主旋翼的旋轉面保持在水平位置,則所產生的力是下列哪個方向?", "options": ["垂直向下。", "垂直向上。", "傾斜向下。", "傾斜向上。"], "a": "B", "note": "若直昇機主旋翼的旋轉圓盤面保持在水平位置，所產生的總空氣動力方向為【垂直向上】。"}, {"id": 122, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機利用主旋翼產生升力的原理執行下列哪些動作?", "options": ["起飛離地。", "爬升。", "懸停。", "以上皆是。"], "a": "D", "note": "直昇機利用主旋翼產生升力，可執行：起飛離地、爬升、懸停（選以上皆是）。"}, {"id": 123, "cat": "6. 無人直昇機原理與基本動作", "q": "如果升力與推力大於重力與阻力,遙控無人機的運動方向是下列哪個方向?", "options": ["垂直向上。", "垂直向下。", "傾斜向上。", "傾斜向下。"], "a": "A", "note": "當垂直向上的「升力與推力」大於向下的「重力與阻力」時，無人機的運動方向為【垂直向上】。"}, {"id": 124, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機主旋翼的槳葉片的俯仰角愈大,就會有下列哪種情形?", "options": ["升力愈大,扭力愈小。", "升力愈大,扭力也愈大。", "升力愈小,也扭力愈小。", "升力愈小,扭力愈大。"], "a": "B", "note": "直昇機主旋翼槳葉的俯仰角（集體變距ピッチ角）愈大，抓風量愈大，產生的【升力愈大，反作用扭力也愈大】。"}, {"id": 125, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機的尾旋翼主要功能為何?", "options": ["抵消升力,控制機頭方向。", "抵消阻力,控制機頭方向。", "抵消扭力,控制機頭方向。", "抵消重力,控制機頭方向。"], "a": "C", "note": "直昇機單一主旋翼旋轉時會對機身產生反作用扭力，故「尾旋翼」的主要功能是【抵消扭力，控制機頭方向（偏航）】。"}, {"id": 126, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機有下列哪些基本飛行動作?", "options": ["平直飛行。", "轉彎。", "爬升及下降。", "以上皆是。"], "a": "D", "note": "無人直昇機的基本飛行動作包含：平直飛行、轉彎、爬升及下降（選以上皆是）。"}, {"id": 127, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「垂直起飛到懸停」,係指垂直飛離地面約2~3呎,並保持下列哪種狀態?", "options": ["航向不變。", "向左的傾斜狀態。", "向右的傾斜狀態。", "主旋翼轉速不變。"], "a": "A", "note": "直昇機「垂直起飛到懸停」標準定義：垂直飛離地面約 2～3 呎，並靠尾旋翼修正保持【航向不變】。"}, {"id": 128, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「懸停轉彎」,係指在懸停高度執行機鼻向左轉或向右轉,並保持下列哪種狀態不變?", "options": ["相對於其他遙控無人直昇機的位置。", "相對於地面的位置。", "相對於最低雲層的位置。", "以上皆是。"], "a": "B", "note": "直昇機「懸停轉彎」（原地自旋）：在懸停高度執行機鼻向左或向右轉，並保持【相對於地面的位置】不變（定點不漂移）。"}, {"id": 129, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「懸停轉彎」,係指保持不變的下列哪種狀態?", "options": ["高度。", "轉彎率。", "轉速。", "以上皆是。"], "a": "D", "note": "直昇機「懸停轉彎」過程中，必須同時保持【高度、轉彎率、轉速】三者穩定不變（選以上皆是）。"}, {"id": 130, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機向前移動到另一特定位置,稱之為無人直昇機的下列哪種動作?", "options": ["懸停。", "側向懸停飛行。", "向前懸停飛行。", "向後懸停飛行。"], "a": "C", "note": "在低空懸停高度下，將無人直昇機向前移動到另一特定位置，稱為【向前懸停飛行】。"}, {"id": 131, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「向前懸停飛行」,係指保持不變的下列哪種狀態?", "options": ["地面速度。", "高度。", "航向。", "以上皆是。"], "a": "D", "note": "直昇機「向前懸停飛行」時，須保持【地面速度、高度、航向】三者不變（選以上皆是）。"}, {"id": 132, "cat": "6. 無人直昇機原理與基本動作", "q": "當必須移動無人直昇機到另一特定位置,但當時狀況不可能執行向前飛行時,就要使用下列哪種動作?", "options": ["側向懸停飛行或向後懸停飛行。", "懸停轉彎。", "平直飛行。", "懸停。"], "a": "A", "note": "當必須移動直昇機到另一特定位置，但受障礙物或環境限制不可能執行向前飛行時，就使用【側向懸停飛行或向後懸停飛行】。"}, {"id": 133, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「側向懸停飛行」,係指保持不變的下列哪種狀態?", "options": ["地面速度。", "高度。", "航向。", "以上皆是。"], "a": "D", "note": "直昇機「側向懸停飛行」時，同樣須保持【地面速度、高度、航向】三者不變（選以上皆是）。"}, {"id": 134, "cat": "6. 無人直昇機原理與基本動作", "q": "當必須移動無人直昇機到另一特定位置,但當時狀況不可能執行向前或側向懸停飛行時,就要使用下列哪種動作?", "options": ["平直飛行。", "向後懸停飛行。", "懸停轉彎。", "傾斜轉彎。"], "a": "B", "note": "當狀況不可能執行向前或側向懸停飛行時，就要使用【向後懸停飛行】（倒退飛行）。"}, {"id": 135, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「向後懸停飛行」,係指保持不變的下列哪種狀態?", "options": ["地面速度。", "高度。", "航向。", "以上皆是。"], "a": "D", "note": "直昇機「向後懸停飛行」時，同樣須保持【地面速度、高度、航向】三者不變（選以上皆是）。"}, {"id": 136, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「平直飛行」,係指保持下列哪種狀態?", "options": ["高度不變和航向不變。", "高度不變和地面速度不變。", "地面速度不變和航向不變。", "主旋翼轉速不變和航向不變。"], "a": "A", "note": "直昇機「平直飛行」（水平直線巡航）定義：保持【高度不變和航向不變】。"}, {"id": 137, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「傾斜轉彎」,係指保持在向左或向右的傾斜狀態,保持下列哪種狀態之飛行?", "options": ["高度不變和航向不變。", "高度改變,但航向不變。", "高度不變,但航向改變。", "高度改變和航向改變。"], "a": "C", "note": "直昇機「傾斜轉彎」定義：機身保持向左或向右傾斜狀態，在轉彎過程中保持【高度不變，但航向改變】。"}, {"id": 138, "cat": "6. 無人直昇機原理與基本動作", "q": "無人直昇機「偏航」,係指利用尾旋翼推力執行下列哪種操縱?", "options": ["改變高度。", "改變航向。", "改變地面速度。", "改變升力。"], "a": "B", "note": "直昇機「偏航 (Yaw)」定義：利用尾旋翼推力大小變化來執行【改變航向】（機頭指向）。"}, {"id": 139, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機可以下列哪種方式來做區分?", "options": ["旋翼數量。", "旋翼分布位置。", "旋翼是否能夠傾斜。", "以上皆可。"], "a": "D", "note": "無人多旋翼機可依：旋翼數量（四軸/六軸/八軸）、旋翼分布位置（X型/十字型/同軸）、旋翼是否能夠傾斜來做區分（選以上皆可）。"}, {"id": 140, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機能夠垂直且穩定的執行下列哪種動作?", "options": ["滾轉及水平平移。", "升降及偏航。", "偏航及水平平移。", "俯仰及水平平移。"], "a": "B", "note": "題目問「垂直且穩定的執行」：多旋翼機在不傾斜機身時，可垂直且穩定執行【升降及偏航】（水平平移則需靠俯仰或滾轉傾斜機身）。"}, {"id": 141, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機具備優秀的下列哪種能力是一般無人飛機望塵莫及的?", "options": ["垂直起降能力。", "定點懸停能力。", "穩定升降及偏航。", "以上皆是。"], "a": "D", "note": "多旋翼機具備一般定翼無人飛機望塵莫及的三大優勢：垂直起降能力、定點懸停能力、穩定升降及偏航（選以上皆是）。"}, {"id": 142, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機的下列哪種旋翼設計使得操控簡單且直接?", "options": ["參差配置的。", "對稱的。", "不對稱的。", "偏一邊的。"], "a": "B", "note": "多旋翼機採用幾何與轉向【對稱的】旋翼配置設計（正反槳相間抵消反扭力），使得操控簡單且直接。"}, {"id": 143, "cat": "7. 無人多旋翼機結構與操控特性", "q": "定距槳無人多旋翼機與無人直昇機相比,在下列哪個方面有很大提升?", "options": ["機械設計結構。", "控制難度。", "姿態平穩。", "以上皆是。"], "a": "D", "note": "定距槳多旋翼機省去了直昇機複雜的十字盤變距連桿機構，在【機械設計結構、控制難度、姿態平穩】三方面皆有很大提升（選以上皆是）。"}, {"id": 144, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機對飛行的影響是下列哪項?", "options": ["沒有影響。", "變得複雜。", "變得簡單。", "有時變得複雜,有時變得簡單。"], "a": "C", "note": "多旋翼機透過飛控系統自動協調各馬達轉速，使飛行操作【變得簡單】。"}, {"id": 145, "cat": "7. 無人多旋翼機結構與操控特性", "q": "無人多旋翼機同時增加或減少每個旋翼的升力,來實現下列哪種飛行狀態?", "options": ["垂直的升降姿態。", "俯仰的姿態。", "偏航的姿態。", "滾轉的姿態。"], "a": "A", "note": "當多旋翼機「同時增加或減少每個旋翼的升力（轉速）」時，機身不傾斜，實現【垂直的升降姿態】。"}, {"id": 146, "cat": "8. 載重平衡：重心位置與重量影響", "q": "同時影響遙控無人機飛行性能與飛航安全的重要因素是下列哪些項目?", "options": ["機體大小。", "電池容量。", "重量和重心位置。", "以上皆是。"], "a": "C", "note": "在載重與平衡學中，同時影響無人機飛行性能與飛航安全的兩大核心關鍵是【重量和重心位置】。"}, {"id": 147, "cat": "8. 載重平衡：重心位置與重量影響", "q": "操作人在飛行前應確認下列何者在合理範圍內?", "options": ["重量。", "重心。", "酬載。", "以上皆是。"], "a": "D", "note": "操作人在飛行前應確認：重量、重心、酬載皆在合理範圍內（選以上皆是）。"}, {"id": 148, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機操作人在飛行前應詳細考量在下列哪種情況下可能降低飛行性能的載重因素?", "options": ["高海拔。", "高溫。", "高濕度。", "以上皆是。"], "a": "D", "note": "會降低空氣密度（造成高密度高度）進而降低載重與飛行性能的三大環境因素：【高海拔、高溫、高濕度】（選以上皆是）。"}, {"id": 149, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重力的著力點稱為下列哪個項目?", "options": ["形心。", "氣動力中心。", "重心。", "升力中心。"], "a": "C", "note": "無人機各部位所受地心引力（重力）的總合著力點，稱為【重心 (Center of Gravity, CG)】。"}, {"id": 150, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機的下列哪個項目與穩定性有很大的關聯?", "options": ["外觀。", "重心。", "大小。", "顏色。"], "a": "B", "note": "無人機的【重心】位置直接決定縱向靜穩定度，與穩定性有很大的關聯。"}, {"id": 151, "cat": "8. 載重平衡：重心位置與重量影響", "q": "當遙控無人機重心位置超出允許範圍時,可能導致遙控無人機發生下列哪種情形?", "options": ["無法穩定起飛。", "無法穩定落地。", "失速。", "以上皆是。"], "a": "D", "note": "當重心位置超出原廠允許範圍時，可能導致：無法穩定起飛、無法穩定落地、失速（選以上皆是）。"}, {"id": 152, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機飛行時,為產生各種姿態,作用於機身上的力為下列哪種情形?", "options": ["升力通常較重量為大。", "升力通常較重量為小。", "有時升力較大,有時重量較大。", "以上皆非。"], "a": "A", "note": "飛行時為了執行爬升、轉彎等加速與姿態變化（負載係數大於 1），作用於機身上的總【升力通常較重量為大】。"}, {"id": 153, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機的轉彎率因不同的速度而隨之不同,這是為了要抵銷所增加的下列哪種力,以保持負載係數不變?", "options": ["向心力。", "離心力。", "正向力。", "扭力。"], "a": "B", "note": "無人機轉彎時會產生向外甩的【離心力】，轉彎率隨速度不同而異，是為了抵銷所增加的離心力以保持負載係數不變。"}, {"id": 154, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機轉彎時,需執行下列哪個動作以補償升力的不足?", "options": ["增加正向力。", "增加攻角。", "增加扭力。", "增加離心力。"], "a": "B", "note": "轉彎時機翼傾斜，垂直方向的升力分量變小；為了維持高度不掉高，轉彎時需【增加攻角】（略帶升降舵）以補償升力的不足。"}, {"id": 155, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心位置靠前時,為維持遙控無人機的俯仰平衡,需要尾翼提供下列哪種力?", "options": ["更大的向前的推力。", "更大的向上的升力。", "更大的向下的升力。", "更大的向外的離心力。"], "a": "C", "note": "⚡重心靠前連環考點(1)：重心靠前＝機頭沉重想低頭；為了把機頭拉平維持俯仰平衡，水平尾翼必須提供【更大的向下的升力】（下壓力）來壓住機尾！"}, {"id": 156, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重心位置靠前時,機頭較為沉重,起飛離地時有下列哪種情形?", "options": ["較為困難。", "較為容易。", "有時容易有時困難。", "以上皆非。"], "a": "A", "note": "⚡重心靠前連環考點(2)：重心靠前時機頭較沉重，起飛拉桿抬頭離地時會【較為困難】。"}, {"id": 157, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心位置靠前時,會有下列哪種情形?", "options": ["減少誘導阻力。", "增大誘導阻力。", "誘導阻力不變。", "以上皆非。"], "a": "B", "note": "⚡重心靠前連環考點(3)：因為尾翼產生更大的向下壓力，主機翼必須產生更多額外升力來抵銷尾翼下壓力，進而【增大誘導阻力】。"}, {"id": 158, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心位置靠前時,會有下列哪種情形?", "options": ["油耗增加。", "航程距離降低。", "以上皆是。", "以上皆非。"], "a": "C", "note": "⚡重心靠前連環考點(4)：重心靠前導致誘導阻力增大，進而造成【油耗增加、航程距離降低】（選以上皆是）。"}, {"id": 159, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心位置靠前時,提高了下列哪種風險?", "options": ["不穩定進場的風險。", "穩定進場的風險。", "非精確進場的風險。", "精確進場的風險。"], "a": "A", "note": "⚡重心靠前連環考點(5)：重心靠前使低速時升降舵配平裕度不足、進場速度被迫提高，提高了【不穩定進場的風險】。"}, {"id": 160, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心後移時,由於機頭較輕,可能會使得起飛時發生下列哪種情形?", "options": ["偏離跑道。", "左右搖擺。", "提前仰轉。", "延後離地。"], "a": "C", "note": "⚡重心後移連環考點(1)：重心後移＝機頭過輕、機尾沉重，起飛滾行時機頭會過早翹起，發生【提前仰轉】。"}, {"id": 161, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心後移時,起飛爬升時可能會因仰角過大,而造成下列哪種情形?", "options": ["起飛速度增加。", "起飛重量降低。", "失速與機尾擦地。", "以上皆是。"], "a": "C", "note": "⚡重心後移連環考點(2)：重心後移時起飛爬升容易因機頭仰角過大（超過臨界攻角），造成【失速與機尾擦地】。"}, {"id": 162, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人飛機重心後移時,配平及總阻力減小,也進而導致下列哪種情形?", "options": ["油耗減少。", "續航能力增加。", "失速速度減小。", "以上皆是。"], "a": "D", "note": "⚡重心後移連環考點(3)：重心後移時尾翼不需提供太多向下配平力，使配平及總阻力減小，進而導致【油耗減少、續航能力增加、失速速度減小】（選以上皆是；但代價是縱向穩定性變差！）。"}, {"id": 163, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人直昇機重心太靠後,會影響下列哪種性能?", "options": ["高速前飛性能及穩定。", "從地面到正常起飛。", "平直飛行。", "以上皆是。"], "a": "A", "note": "無人直昇機若重心太靠後（機尾下垂），高速前飛時機頭壓不下去，會嚴重影響【高速前飛性能及穩定】。"}, {"id": 164, "cat": "8. 載重平衡：重心位置與重量影響", "q": "無人多旋翼機重心移動可能造成下列哪種結果?", "options": ["升力增加。", "操控較為困難。", "阻力減少。", "以上皆是。"], "a": "B", "note": "⚠️必考陷阱：無人多旋翼機若重心移動偏離中心，部分馬達必須長期超負荷補償出力，會造成 (B)【操控較為困難】（絕對不會讓升力增加或阻力減少，勿選 D！）。"}, {"id": 165, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對起飛速度造成下列哪種結果?", "options": ["降低起飛速度。", "起飛速度不變。", "提高起飛速度。", "以上皆非。"], "a": "C", "note": "📌重量增加 7 大連鎖反應(1)：機體變重需要更大升力才能離地，故必須【提高起飛速度】。"}, {"id": 166, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對滑行距離造成下列哪種結果?", "options": ["縮短起飛滑行距離。", "加長起飛滑行距離。", "起飛滑行距離不變。", "以上皆非。"], "a": "B", "note": "📌重量增加 7 大連鎖反應(2)：因為需要加速到更高的起飛速度且加速度變慢，會【加長起飛滑行距離】。"}, {"id": 167, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對爬升率及爬升角造成下列哪種結果?", "options": ["降低爬升率和爬升角度。", "增加爬升率和爬升角度。", "爬升率和爬升角度不變。", "以上皆非。"], "a": "A", "note": "📌重量增加 7 大連鎖反應(3)：多餘可用推力減少，會【降低爬升率和爬升角度】。"}, {"id": 168, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對飛航最高高度造成下列哪種結果?", "options": ["降低飛航最高高度。", "增加飛航最高高度。", "飛航最高高度不變。", "以上皆非。"], "a": "A", "note": "📌重量增加 7 大連鎖反應(4)：高空空氣稀薄無法支撐過重機體，會【降低飛航最高高度】（實用升限降低）。"}, {"id": 169, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對操作性能造成下列哪種結果?", "options": ["操作性能不變。", "增加操作性能。", "降低操作性能。", "以上皆非。"], "a": "C", "note": "📌重量增加 7 大連鎖反應(5)：慣性變大、靈敏度變差，會【降低操作性能】。"}, {"id": 170, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對進場及降落速度造成下列哪種結果?", "options": ["降低進場和降落速度。", "提高進場和降落速度。", "進場和降落速度不變。", "以上皆非。"], "a": "B", "note": "📌重量增加 7 大連鎖反應(6)：失速速度隨重量增加而提高，因此必須【提高進場和降落速度】。"}, {"id": 171, "cat": "8. 載重平衡：重心位置與重量影響", "q": "遙控無人機重量增加可能對降落滾行距離造成下列哪種結果?", "options": ["加長降落滾行距離。", "縮短降落滾行距離。", "降落滾行距離不變。", "以上皆非。"], "a": "A", "note": "📌重量增加 7 大連鎖反應(7)：落地速度變快且動能變大、煞車減速不易，會【加長降落滾行距離】。"}, {"id": 172, "cat": "8. 載重平衡：重心位置與重量影響", "q": "為確保飛行安全,操作人須審慎確認遙控無人機的下列哪個特性?", "options": ["外觀。", "重量與載重平衡。", "價格。", "以上皆是。"], "a": "B", "note": "總結考點：為確保飛行安全，操作人於飛航前須審慎確認無人機的【重量與載重平衡】。"}];
+    const STORAGE_KEY = 'caa_drone_ch2_anki_srs_v1';
+
+    let srsState = {};
+    let sessionStep = 0;
+    let currentCard = null;
+    let isRevealed = false;
+    let seqIndex = 0;
+
+    function initSRS() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { srsState = JSON.parse(saved); } catch (e) { srsState = {}; }
+        }
+        RAW_CARDS.forEach(c => {
+            if (!srsState[c.id]) {
+                srsState[c.id] = {
+                    status: 'new',
+                    reps: 0,
+                    lapses: 0,
+                    ease: 2.5,
+                    intervalDays: 0,
+                    dueStep: 0,
+                    dueTime: 0
+                };
+            }
+        });
+        saveSRS();
+    }
+
+    function saveSRS() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(srsState));
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        const now = Date.now();
+        let nNew = 0, nLearn = 0, nDue = 0, nGrad = 0;
+
+        RAW_CARDS.forEach(c => {
+            const st = srsState[c.id];
+            if (st.status === 'new') {
+                nNew++;
+            } else if (st.status === 'learning') {
+                nLearn++;
+            } else if (st.status === 'graduated') {
+                nGrad++;
+                if (st.dueTime <= now || st.dueStep <= sessionStep) {
+                    nDue++;
+                }
+            }
+        });
+
+        document.getElementById('countNew').textContent = nNew;
+        document.getElementById('countLearning').textContent = nLearn;
+        document.getElementById('countDue').textContent = nDue;
+        document.getElementById('countGrad').textContent = nGrad;
+
+        const pct = Math.round((nGrad / RAW_CARDS.length) * 100);
+        document.getElementById('masteryBar').style.width = pct + '%';
+    }
+
+    function getFilteredPool() {
+        const cat = document.getElementById('catFilter').value;
+        return cat === 'ALL' ? RAW_CARDS : RAW_CARDS.filter(c => c.cat === cat);
+    }
+
+    function pickNextCard() {
+        const pool = getFilteredPool();
+        const mode = document.getElementById('modeSelect').value;
+        const now = Date.now();
+
+        if (mode === 'SEQ') {
+            if (seqIndex >= pool.length) seqIndex = 0;
+            return pool[seqIndex];
+        }
+
+        if (mode === 'WEAK') {
+            const weakCards = pool.filter(c => {
+                const st = srsState[c.id];
+                return st.status === 'learning' || st.lapses > 0 || st.ease < 2.4;
+            });
+            if (weakCards.length === 0) {
+                alert('目前此分類下沒有「學習中或曾答錯」的弱點卡片！系統將自動切換回 Anki 智能排程模式。');
+                document.getElementById('modeSelect').value = 'SRS';
+            } else {
+                weakCards.sort((a, b) => (srsState[a.id].dueStep - srsState[b.id].dueStep) || (srsState[b.id].lapses - srsState[a.id].lapses));
+                if (weakCards.length > 1 && currentCard && weakCards[0].id === currentCard.id) {
+                    return weakCards[1];
+                }
+                return weakCards[0];
+            }
+        }
+
+        // Priority 1: Learning cards whose dueStep <= sessionStep
+        const dueLearning = pool.filter(c => srsState[c.id].status === 'learning' && srsState[c.id].dueStep <= sessionStep);
+        if (dueLearning.length > 0) {
+            dueLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            return dueLearning[0];
+        }
+
+        // Priority 2: Graduated review cards that are due
+        const dueReview = pool.filter(c => srsState[c.id].status === 'graduated' && srsState[c.id].dueTime <= now);
+        if (dueReview.length > 0) {
+            dueReview.sort((a, b) => srsState[a.id].dueTime - srsState[b.id].dueTime);
+            return dueReview[0];
+        }
+
+        // Priority 3: New cards
+        const newCards = pool.filter(c => srsState[c.id].status === 'new');
+        if (newCards.length > 0) {
+            return newCards[0];
+        }
+
+        // Priority 4: Any remaining learning cards
+        const anyLearning = pool.filter(c => srsState[c.id].status === 'learning');
+        if (anyLearning.length > 0) {
+            anyLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            if (anyLearning.length > 1 && currentCard && anyLearning[0].id === currentCard.id) {
+                return anyLearning[1];
+            }
+            return anyLearning[0];
+        }
+
+        // Priority 5: All graduated
+        const sortedGrad = [...pool].sort((a, b) => srsState[a.id].ease - srsState[b.id].ease);
+        if (sortedGrad.length > 1 && currentCard && sortedGrad[0].id === currentCard.id) {
+            return sortedGrad[1];
+        }
+        return sortedGrad[0];
+    }
+
+    function renderCard(card) {
+        currentCard = card;
+        isRevealed = false;
+        const st = srsState[card.id];
+
+        document.getElementById('cardNo').textContent = `第二章 第 ${card.id} 題`;
+        document.getElementById('cardCat').textContent = card.cat;
+
+        const statusEl = document.getElementById('cardStatus');
+        if (st.status === 'new') {
+            statusEl.textContent = '🆕 新卡片';
+            statusEl.className = 'badge badge-status-new';
+        } else if (st.status === 'learning') {
+            statusEl.textContent = '🔥 學習/重來中';
+            statusEl.className = 'badge badge-status-learning';
+        } else {
+            statusEl.textContent = `✅ 已熟記（間隔 ${st.intervalDays} 天）`;
+            statusEl.className = 'badge badge-status-graduated';
+        }
+
+        document.getElementById('cardMeta').textContent =
+            `難度因子 EF: ${st.ease.toFixed(2)} ｜ 連對: ${st.reps} 次 ｜ 遺忘: ${st.lapses} 次`;
+
+        document.getElementById('cardQuestion').textContent = `${card.id}. ${card.q}`;
+
+        const optsContainer = document.getElementById('cardOptions');
+        optsContainer.innerHTML = '';
+        card.options.forEach((optText, idx) => {
+            const letter = String.fromCharCode(65 + idx);
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${optText}</span>`;
+            btn.onclick = () => selectOption(letter);
+            optsContainer.appendChild(btn);
+        });
+
+        updateAnkiButtonLabels(st);
+
+        document.getElementById('answerPanel').style.display = 'none';
+        document.getElementById('btnShowAnswer').style.display = 'block';
+        document.querySelectorAll('.anki-btn').forEach(b => b.classList.remove('recommended'));
+    }
+
+    function updateAnkiButtonLabels(st) {
+        document.getElementById('time1').textContent = '< 1 分鐘 (3題後)';
+        document.getElementById('time2').textContent = '< 6 分鐘 (6題後)';
+        if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+            document.getElementById('time3').textContent = '10 分鐘 (12題後)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else if (st.status === 'learning' && st.reps >= 1) {
+            document.getElementById('time3').textContent = '1 天 (晉升熟記)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else {
+            const nextGood = Math.max(1, Math.round(st.intervalDays * st.ease));
+            const nextEasy = Math.max(4, Math.round(st.intervalDays * st.ease * 1.3));
+            document.getElementById('time3').textContent = `${nextGood} 天`;
+            document.getElementById('time4').textContent = `${nextEasy} 天`;
+        }
+    }
+
+    function selectOption(letter) {
+        if (isRevealed) return;
+        revealAnswer(letter);
+    }
+
+    function revealAnswer(selectedLetter = null) {
+        if (isRevealed) return;
+        isRevealed = true;
+
+        const correctLetter = currentCard.a;
+        const correctIdx = correctLetter.charCodeAt(0) - 65;
+        const optButtons = document.querySelectorAll('.opt-btn');
+
+        optButtons.forEach((btn, idx) => {
+            btn.disabled = true;
+            const l = String.fromCharCode(65 + idx);
+            if (l === correctLetter) {
+                btn.classList.add('correct-choice');
+            } else if (selectedLetter && l === selectedLetter && selectedLetter !== correctLetter) {
+                btn.classList.add('wrong-choice');
+            }
+        });
+
+        const banner = document.getElementById('correctBanner');
+        if (selectedLetter) {
+            if (selectedLetter === correctLetter) {
+                banner.textContent = `🎉 答對了！正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate3').classList.add('recommended');
+            } else {
+                banner.textContent = `❌ 答錯了（您選 ${selectedLetter}）｜正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate1').classList.add('recommended');
+            }
+        } else {
+            banner.textContent = `💡 正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+        }
+
+        document.getElementById('cardNote').textContent = currentCard.note;
+        document.getElementById('btnShowAnswer').style.display = 'none';
+        document.getElementById('answerPanel').style.display = 'block';
+    }
+
+    function rateCard(rating) {
+        if (!currentCard) return;
+        sessionStep++;
+        const st = srsState[currentCard.id];
+        const now = Date.now();
+        const DAY_MS = 86400 * 1000;
+
+        if (rating === 1) {
+            st.status = 'learning';
+            st.reps = 0;
+            st.lapses += 1;
+            st.ease = Math.max(1.3, st.ease - 0.2);
+            st.intervalDays = 0;
+            st.dueStep = sessionStep + 3;
+        } else if (rating === 2) {
+            st.status = 'learning';
+            st.ease = Math.max(1.3, st.ease - 0.15);
+            st.dueStep = sessionStep + 6;
+        } else if (rating === 3) {
+            if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+                st.status = 'learning';
+                st.reps = 1;
+                st.dueStep = sessionStep + 12;
+            } else if (st.status === 'learning' && st.reps >= 1) {
+                st.status = 'graduated';
+                st.reps += 1;
+                st.intervalDays = 1;
+                st.dueTime = now + 1 * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            } else {
+                st.reps += 1;
+                st.intervalDays = Math.max(1, Math.round(st.intervalDays * st.ease));
+                st.dueTime = now + st.intervalDays * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            }
+        } else if (rating === 4) {
+            st.status = 'graduated';
+            st.reps += 1;
+            st.ease = Math.min(3.0, st.ease + 0.15);
+            st.intervalDays = st.intervalDays > 0 ? Math.max(4, Math.round(st.intervalDays * st.ease * 1.3)) : 4;
+            st.dueTime = now + st.intervalDays * DAY_MS;
+            st.dueStep = sessionStep + 9999;
+        }
+
+        saveSRS();
+
+        if (document.getElementById('modeSelect').value === 'SEQ') {
+            seqIndex++;
+        }
+
+        renderCard(pickNextCard());
+    }
+
+    function onFilterChange() {
+        seqIndex = 0;
+        renderCard(pickNextCard());
+        if (document.getElementById('browserPanel').style.display === 'block') {
+            renderBrowserTable();
+        }
+    }
+
+    function toggleBrowser() {
+        const panel = document.getElementById('browserPanel');
+        const cardView = document.getElementById('flashcardView');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            cardView.style.display = 'flex';
+        } else {
+            renderBrowserTable();
+            panel.style.display = 'block';
+            cardView.style.display = 'none';
+        }
+    }
+
+    function renderBrowserTable() {
+        const tbody = document.getElementById('browserBody');
+        const pool = getFilteredPool();
+        let html = '';
+
+        pool.forEach(c => {
+            const st = srsState[c.id];
+            const ansIdx = c.a.charCodeAt(0) - 65;
+            let badgeHtml = '';
+            if (st.status === 'new') badgeHtml = '<span class="badge badge-status-new">新卡片</span>';
+            else if (st.status === 'learning') badgeHtml = '<span class="badge badge-status-learning">學習中</span>';
+            else badgeHtml = `<span class="badge badge-status-graduated">熟記(${st.intervalDays}d)</span>`;
+
+            html += `
+                <tr class="browser-row" onclick="jumpToCard(${c.id})">
+                    <td><b>#${c.id}</b></td>
+                    <td><span style="font-size:0.8rem;color:#0369a1;font-weight:700;">${c.cat}</span></td>
+                    <td>
+                        <div style="font-weight:700;">${c.q}</div>
+                        <div style="font-size:0.84rem;color:#15803d;">正解：(${c.a}) ${c.options[ansIdx]}</div>
+                    </td>
+                    <td>${badgeHtml}</td>
+                    <td>${st.reps} / <span style="color:#dc2626;font-weight:700;">${st.lapses}</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function jumpToCard(id) {
+        const found = RAW_CARDS.find(c => c.id === id);
+        if (found) {
+            document.getElementById('browserPanel').style.display = 'none';
+            document.getElementById('flashcardView').style.display = 'flex';
+            renderCard(found);
+        }
+    }
+
+    function resetProgress() {
+        if (confirm('確定要清除第二章全部 172 題的 Anki 學習紀錄，將所有卡片重置為「未學新卡」嗎？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            srsState = {};
+            sessionStep = 0;
+            seqIndex = 0;
+            initSRS();
+            renderCard(pickNextCard());
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.getElementById('browserPanel').style.display === 'block') return;
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (!isRevealed) revealAnswer();
+        } else if (isRevealed) {
+            if (e.key === '1') rateCard(1);
+            else if (e.key === '2') rateCard(2);
+            else if (e.key === '3') rateCard(3);
+            else if (e.key === '4') rateCard(4);
+        }
+    });
+
+    window.onload = () => {
+        initSRS();
+        renderCard(pickNextCard());
+    };
+</script>
+
+</body>
+</html>

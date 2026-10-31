@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遙控無人機普通操作證｜學科測驗雲端學習站</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #0284c7;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
+            background: var(--bg);
+            color: #0f172a;
+            line-height: 1.6;
+            padding: 24px 16px 60px;
+        }
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+        }
+        p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #334155;
+            margin: 20px 0 10px 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+        .nav-card {
+            display: block;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .nav-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+        }
+        .nav-card h2 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .nav-card p {
+            font-size: 0.88rem;
+            color: #64748b;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛩️ 遙控無人機普通操作證</h1>
+            <p>民航局學科測驗（388 題）雲端自學與記憶系統</p>
+        </header>
+
+        <div class="section-title">📖 教材與綜合模擬測驗</div>
+        <div class="grid">
+            <a href="drone_complete_study_guide.html" class="nav-card">
+                <span class="badge">圖文講義</span>
+                <h2>完整學科教材講義</h2>
+                <p>四大章節重點精華歸納、數值對照表與 12 大易錯陷阱總整理</p>
+            </a>
+            <a href="drone_exam_full_388.html" class="nav-card">
+                <span class="badge">隨機抽題</span>
+                <h2>388 題全題庫模擬考系統</h2>
+                <p>每次隨機抽取 20 題、自動算分（80 分及格）並即時標示正確答案</p>
+            </a>
+        </div>
+
+        <div class="section-title">🧠 Anki 間隔重複 (SRS) 記憶卡</div>
+        <div class="grid">
+            <a href="drone_ch1_anki_srs.html" class="nav-card">
+                <span class="badge">91 題</span>
+                <h2>第一章：民用航空法及相關法規</h2>
+                <p>罰鍰額度對照、25kg 實體檢驗、操作限制與權責機關記憶卡</p>
+            </a>
+            <a href="drone_ch2_anki_srs.html" class="nav-card">
+                <span class="badge">172 題</span>
+                <h2>第二章：基礎飛行原理</h2>
+                <p>三軸舵面、牛頓定律、四力平衡、各類阻力與重心載重考點</p>
+            </a>
+            <a href="drone_ch3_anki_srs.html" class="nav-card">
+                <span class="badge">82 題</span>
+                <h2>第三章：氣象</h2>
+                <p>密度高度反向觀念、五大霧種成因、低空風切與 METAR 報文判讀</p>
+            </a>
+            <a href="drone_ch4_anki_srs.html" class="nav-card">
+                <span class="badge">43 題</span>
+                <h2>第四章：緊急處置與飛行決策</h2>
+                <p>過度換氣矯治、技能疲勞、熱中暑、迫降處置與危險心態辨析</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遙控無人機普通操作證｜完整學科教材講義</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --secondary: #0284c7;
+            --accent: #d97706;
+            --accent-bg: #fffbeb;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --success: #059669;
+            --success-bg: #ecfdf5;
+            --text: #1f2937;
+            --text-muted: #4b5563;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.75;
+            padding-bottom: 60px;
+        }
+
+        /* Top Header */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0369a1 100%);
+            color: white;
+            padding: 36px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 1.05rem;
+            opacity: 0.92;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .exam-badge-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .exam-badge {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* Sticky Navigation & Search */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 320px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1100px;
+            margin: 28px auto;
+            padding: 0 20px;
+        }
+
+        /* Chapter Card */
+        .chapter-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .chapter-header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chapter-header h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
+        }
+
+        .chapter-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        h3 {
+            color: #0f172a;
+            font-size: 1.25rem;
+            margin: 28px 0 14px 0;
+            padding-left: 12px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul, ol {
+            margin: 10px 0 18px 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Inline Badges for Key Terms & Numbers */
+        .term {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid #bfdbfe;
+            font-size: 0.96em;
+            display: inline-block;
+            margin: 1px 2px;
+        }
+
+        .num {
+            background-color: #fef3c7;
+            color: #92400e;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid #fde68a;
+            font-size: 0.96em;
+            display: inline-block;
+            margin: 1px 2px;
+        }
+
+        /* Callout Boxes */
+        .trap-box {
+            background-color: var(--danger-bg);
+            border-left: 5px solid var(--danger);
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 18px 0;
+        }
+
+        .trap-box .box-title {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tip-box {
+            background-color: var(--success-bg);
+            border-left: 5px solid var(--success);
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 18px 0;
+        }
+
+        .tip-box .box-title {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+
+        /* Tables */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 16px 0 24px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.96rem;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 12px 14px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Grid Cards for Comparisons */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 18px;
+            margin: 16px 0;
+        }
+
+        .sub-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        .sub-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 6px;
+        }
+
+        @media print {
+            .sticky-nav { display: none; }
+            body { background: white; }
+            .chapter-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>遙控無人機普通操作證｜完整學科教材講義</h1>
+    <p>依據民航局最新題庫（共 4 大章節、388 題完整考點）系統化編纂，完全採用純文字與視覺化標籤排版，支援電腦與手機瀏覽器直接閱讀。</p>
+    <div class="exam-badge-bar">
+        <span class="exam-badge">測驗題數：40 題單選題</span>
+        <span class="exam-badge">每題配分：2.5 分（滿分 100 分）</span>
+        <span class="exam-badge">合格標準：80 分（最多僅能錯 8 題）</span>
+        <span class="exam-badge">測驗時間：60 分鐘</span>
+    </div>
+</header>
+
+<nav class="sticky-nav">
+    <div class="nav-inner">
+        <div class="nav-links">
+            <a href="#ch1">第一章：民航法規</a>
+            <a href="#ch2">第二章：基礎飛行原理</a>
+            <a href="#ch3">第三章：氣象</a>
+            <a href="#ch4">第四章：緊急處置與決策</a>
+            <a href="#traps">必考陷阱總整理</a>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜尋關鍵字（例：罰鍰、重心、霧、25公斤）..." oninput="filterContent()">
+        </div>
+    </div>
+</nav>
+
+<div class="container" id="mainContent">
+
+    <!-- ==================== 第一章 ==================== -->
+    <section class="chapter-card" id="ch1">
+        <div class="chapter-header">
+            <h2>第一章：民用航空法及相關法規</h2>
+            <span class="chapter-tag">題庫範圍：第 1 ～ 91 題</span>
+        </div>
+
+        <h3>1. 立法目的、基本定義與構造分類</h3>
+        <ul>
+            <li><strong>不當操作之危害與管理目的：</strong>遙控無人機若遭作為犯罪工具或失控墜落，會造成他人生命財產損失、危害公共利益、影響飛航安全。因此規定註冊、教育宣導及操作範圍警示，目的皆為達到<span class="term">【安全使用】</span>；考取操作證則是確保操作人於<span class="num">操作前及操作時</span>熟悉航空知識與管理規範，並具備緊急處置能力。</li>
+            <li><strong>購買與自我管理：</strong>購買時應留意產品之<span class="term">【使用限制】</span>、<span class="term">【操作性能】</span>及<span class="term">【保固範圍】</span>。空中飛航易伴隨較高之<span class="term">【社會風險】</span>，從事休閒娛樂性質之活動，其風險以<span class="term">【自我管理】</span>為主。</li>
+            <li><strong>適用空間範圍：</strong>民用航空法之遙控無人機相關規定，僅適用於<span class="term">【建築物外開放空間】</span>（若在建築物內密閉空間飛行，不適用民航法無人機規定）。</li>
+            <li><strong>法規核心名詞定義：</strong>
+                <ul>
+                    <li><span class="term">【遙控無人機】</span>：指自遙控設備以信號鏈路進行飛航控制，或以自動駕駛操作或其他經民航局公告之無人航空器。</li>
+                    <li><span class="term">【通訊及控制信號鏈路】</span>：指遙控無人機和遙控設備間為操作飛行管理目的之資料鏈接。</li>
+                    <li><span class="term">【最大起飛重量 (MTOW)】</span>：計算時應包含<strong>機體、燃料或電池、負載設備及酬載</strong>之總重量。</li>
+                    <li><span class="term">【遙控無人機操作人】</span>：指於飛航活動期間，實際操控無人機或指揮監督飛航活動之人員。若飛航活動涉及 2 位以上操作者，應指定 <span class="num">1 人為決定權人</span> 始得從事飛航活動。</li>
+                    <li><span class="term">【目視觀察員】</span>：指持有遙控無人機操作證，並於活動期間提供實際操控無人機之操作人必要飛航資訊之人員。</li>
+                </ul>
+            </li>
+            <li><strong>無人機構造分類：</strong>分為<span class="term">【無人飛機】</span>、<span class="term">【無人直昇機】</span>及<span class="term">【無人多旋翼機】</span>。其中<span class="term">【無人多旋翼機】</span>定義為具有 <span class="num">3 個以上</span> 垂直傳動軸之無人機。</li>
+            <li><strong>外國人申請認可：</strong>外國人領有外國政府核發之註冊、操作證及檢驗合格證明文件者，必須向<span class="term">【民航局】</span>申請認可後，始得於我國從事飛航活動。</li>
+        </ul>
+
+        <h3>2. 隱私權保護與責任歸屬</h3>
+        <ul>
+            <li><strong>禁止侵害隱私與非法場所：</strong>操作人不得利用無人機從事非法行為；未經同意或無故，不得對他人進行<strong>攝錄非公開活動、竊聽私下談話、窺視身體隱私部位</strong>，亦不得未經同意進行<strong>錄音、照相、錄影、電磁紀錄竊錄</strong>。此外，不得無故於<strong>私人庭院、學校教室、辦公室場所</strong>進行飛航活動。</li>
+            <li><strong>飛安維護與損害賠償責任：</strong>
+                <ul>
+                    <li><span class="term">【遙控無人機所有人及操作人】</span>應負飛航安全、使用安全、風險管理及法規遵循之責，對無人機為妥善之維護。</li>
+                    <li>因故意或過失致他人死傷，或毀損他人財物時，由<span class="term">【所有人】</span>負賠償責任。</li>
+                    <li>若所有人將無人機交由他人操作而不慎墜落傷人，應由<span class="term">【所有人及操作人】</span>負<span class="term">【連帶賠償責任】</span>。</li>
+                    <li>政府機關(構)、學校或法人於從事民航局核准之飛航活動前，應依<span class="term">【民用航空法】</span>強制投保<span class="term">【責任保險】</span>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3. 註冊號碼標明、射頻識別与檢驗制度（25 公斤門檻）</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">管理項目</th>
+                        <th style="width: 53%;">核心規範內容与期限</th>
+                        <th style="width: 25%;">申請人 / 主管機關</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>註冊號碼標明</strong></td>
+                        <td>
+                            1. 標漆位置：應位於<span class="term">【固定結構外部】</span>、<span class="term">【機身未遮蔽之平整面上】</span>（不可標於起落架、螺旋槳或電池蓋上）。<br>
+                            2. 標示要求：以標籤、鐫刻、噴漆等方式標明，確保不至脫落、保持清潔、能明顯辨識，且顏色應<span class="term">【與背景明顯反襯】</span>。<br>
+                            3. 嚴禁行為：不得偽造、變造、矇領，且<strong>不得於任何未註冊之無人機上使用</strong>（連自己另一台未註冊的也不行）。
+                        </td>
+                        <td>所有人 / <span class="term">【民航局】</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>射頻識別 (RFID)</strong></td>
+                        <td>最大起飛重量超過一定重量之無人機應具有射頻識別功能，該一定重量由<span class="term">【民航局】</span>公告之。</td>
+                        <td>主管機關：<span class="term">【民航局】</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>型式檢驗與試飛</strong></td>
+                        <td>
+                            1. 設計、製造、改裝之型式檢驗，以及為驗證性能諸元所需之<strong>試飛活動</strong>。<br>
+                            2. 自國外進口之無人機，由<span class="term">【進口者】</span>申請型式檢驗。
+                        </td>
+                        <td>設計者、製造者、改裝者、進口者 / <span class="term">【民航局】</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>實體檢驗（25 公斤以上）</strong></td>
+                        <td>
+                            1. 最大起飛重量 <span class="num">25 公斤以上</span> 之無人機，為確保符合性能諸元，應申請<span class="term">【實體檢驗】</span>。<br>
+                            2. 自行製造、使用之 <span class="num">25 公斤以上</span> 無人機，可提出<strong>合併型式檢驗及實體檢驗</strong>之申請。<br>
+                            3. 實體檢驗合格證記載事項變更時，應於事實發生日起 <span class="num">15 日內</span> 申請換發。<br>
+                            4. 因設計、製造或改裝缺失致有不安全情況時，設計者、製造者、改裝者均應採取補正措施。
+                        </td>
+                        <td><strong>申請人皆為：<span class="term">【所有人】</span></strong><br>主管機關：<span class="term">【民航局】</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>產品資訊登錄</strong></td>
+                        <td>製造者與進口者應於<span class="num">販售或進口前</span>申請產品資訊登錄。</td>
+                        <td>製造者、進口者 / <span class="term">【民航局】</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">⚠️ 必考陷阱提醒：25 公斤以上「實體檢驗」誰來申請？</div>
+            <p>題庫第 70、72、74 題常考：最大起飛重量 <strong>25 公斤以上</strong> 之實體檢驗、自行製造使用之合併檢驗、以及合格證變更（15日內換發），申請人全部都是 <strong><span class="term">【所有人】</span></strong>（機主），千萬不要誤選成製造者或操作人！</p>
+        </div>
+
+        <h3>4. 操作證分類與考照規範</h3>
+        <ul>
+            <li><strong>操作證三大分類：</strong>分為<span class="term">【學習操作證】</span>、<span class="term">【普通操作證】</span>、<span class="term">【專業操作證】</span>。（⚠️ 題庫陷阱：<strong>沒有</strong>「暫時操作證」！）</li>
+            <li><strong>休閒娛樂免考照門檻：</strong>自然人操作<strong>未達 <span class="num">2 公斤</span></strong> 之遙控無人機從事休閒娛樂用途，<strong>不須考照</strong>。</li>
+            <li><strong>法人與特殊業務要求：</strong>操作政府機關(構)、學校或法人所有之無人機，應持有民航局發給之<span class="term">【操作證】</span>。若欲代地方農會執行<strong>農藥噴灑作業</strong>，操作人須通過<strong>學、術科測驗</strong>（取得專業操作證），且作業前須經申請核准。</li>
+            <li><strong>術科測驗期限：</strong>申請專業操作證者，其術科測驗應於學科測驗通過日起 <span class="num">1 年內</span> 完成，否則應重新申請學科測驗。</li>
+        </ul>
+
+        <h3>5. 空域管理、操作限制與安全距離（核心必考）</h3>
+        <ul>
+            <li><strong>飛航規範訂定機關：</strong>由<span class="term">【交通部】</span>負責訂定從事遙控無人機飛航活動所應遵守之規範。</li>
+            <li><strong>空域劃設與取締權責對照：</strong>
+                <ul>
+                    <li><strong>禁航區、限航區：</strong>未經許可不得飛航。若未經同意飛入，得由<span class="term">【禁航區、限航區之管理人】</span>採取適當措施予以制止或排除。</li>
+                    <li><strong>航空站或飛行場四周一定距離範圍：</strong>由<span class="term">【民航局】</span>公告。未經同意飛入者，經營人或管理人得會同<span class="term">【航空警察局】</span>予以取締。法人因業務需於禁限航區或航空站四周範圍活動，應申請<span class="term">【民航局】</span>會商目的事業主管機關同意。</li>
+                    <li><strong>直轄市、縣(市)政府公告區域：</strong>地方政府得依公益及安全需要，公告無人機活動區域、活動時間及其他管理事項（中央主管機關有需求亦得提請<span class="term">【直轄市、縣(市)政府】</span>公告）。未經同意飛入者，由<span class="term">【直轄市、縣(市)政府】</span>取締。法人因業務需於地方公告限制外活動，應於活動日前 <span class="num">15 日前</span> 檢附計畫書，申請<span class="term">【直轄市、縣(市)政府】</span>會商相關中央主管機關同意。</li>
+                </ul>
+            </li>
+            <li><strong>一般休閒娛樂飛航操作限制（未經民航局核准不得突破）：</strong>
+                <ol>
+                    <li><strong>高度限制：</strong>實際高度不得逾距地面或水面 <span class="num">400 呎</span>（約 120 公尺）。</li>
+                    <li><strong>時間限制：</strong>不得於<span class="num">日落後至日出前</span>（夜間）進行飛航活動。</li>
+                    <li><strong>架數與視距限制：</strong>每名操作人最多僅得同時控制 <span class="num">1 架</span> 無人機；僅透過即時傳輸圖像功能（FPV）<strong>不足以</strong>監控鏡頭外之周遭狀況，必須保持目視並留意周遭狀況，防止與其他航空器、建築物、人群接近或碰撞。</li>
+                    <li><strong>裝載與投擲限制：</strong>不得裝載<span class="term">【民用航空法所公告之危險物品】</span>（但光學酬載、飛航所需電池燃油、調整重心之配重塊可以裝載）；非經核准不得<strong>投擲或噴灑任何物件</strong>。</li>
+                    <li><strong>人群上空限制：</strong>不得於<span class="term">【人群聚集或室外集會遊行上空】</span>活動。若法人經民航局核准於該處活動，活動場地仍應取得<span class="term">【直轄市、縣(市)政府及相關中央主管機關】</span>之同意。</li>
+                    <li><strong>建築物與障礙物距離限制：</strong>應至少距建築物及障礙物範圍 <span class="num">30 公尺以上</span>。（⚠️ 題庫第 91 題陷阱：選項 A 高速公路 10 公尺、選項 B 高架鐵路 20 公尺皆為錯誤干擾項，唯一正確答案為 <strong>(C) 應至少距建築物及障礙物範圍 30 公尺以上</strong>！）</li>
+                    <li><strong>載具上操作限制：</strong>操作人可於固定之導控站、固定之車輛、固定之船艦上操作；但<strong>絕對不可於<span class="term">【移動中之航空器上】</span>操作</strong>。</li>
+                </ol>
+            </li>
+        </ul>
+
+        <h3>6. 飛安事件通報與違規罰鍰總表（必背數字）</h3>
+        <ul>
+            <li><strong>飛航前檢查：</strong>應於<span class="num">飛航活動前</span>依製造者提供之維修指引對系統進行檢查，並考量氣象條件、空域限制及空中/地面危害因素（不含操作者家庭狀況）。</li>
+            <li><strong>飛安事件通報時限（24 小時內）：</strong>當發生 (1) 最大起飛重量 <span class="num">2 公斤以上</span> 且裝置導航設備之無人機遭受實質損害或失蹤，或 (2) 發生與其他航空器或障礙物接近或碰撞之事故時，所有人或操作人應於發生或得知消息後 <span class="num">24 小時內</span> 填具飛航安全相關事件報告表，透過<span class="term">【民航局所指定之資訊系統】</span>通報民航局。</li>
+            <li><strong>民航局緊急處置權：</strong>發生飛安事件時，民航局針對操作人<strong>得逕為暫停其操作或飛航活動</strong>（無須經操作人或地方政府同意）。</li>
+        </ul>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">罰鍰額度（新臺幣）</th>
+                        <th style="width: 25%;">附加處分</th>
+                        <th style="width: 50%;">違反之法規項目（衡量公眾利益及安全財產危害程度）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="num">30 萬元 ～ 150 萬元</span></td>
+                        <td><strong>廢止其操作證</strong>，並得沒入遙控無人機</td>
+                        <td>
+                            1. 違反「禁航區、限航區及航空站或飛行場四周一定距離範圍內」從事飛航活動（第 43 題）。<br>
+                            2. 違反「不得逾距地面或水面高度 <span class="num">400 呎</span>」之規定（第 44 題）。
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="num">6 萬元 ～ 30 萬元</span></td>
+                        <td>禁止其活動，情節重大者並得沒入</td>
+                        <td>
+                            1. 違反「未領有操作證而操作遙控無人機」（無照操作，第 45 題）。<br>
+                            2. 違反「未投保或未足額投保責任保險而從事活動」（無保險，第 46 題）。
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="num">3 萬元 ～ 15 萬元</span></td>
+                        <td>禁止其活動，情節重大者並得沒入</td>
+                        <td>
+                            1. 違反「遙控無人機註冊或標明註冊號碼」相關規定（第 47 題）。<br>
+                            2. 違反「直轄市、縣(市)政府公告之區域、時間及其他管理事項」（第 48 題）。<br>
+                            3. 違反「遙控無人機飛航活動應遵守之規定」（如夜間飛行、人群上空等，第 49 題）。
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="num">1 萬元 ～ 150 萬元</span></td>
+                        <td>禁止其活動，情節重大者並得沒入</td>
+                        <td>
+                            違反「射頻識別、檢驗、認可、維修與檢查、飛航活動之活動許可及內容、製造者與進口者之登錄及責任、飛航安全相關事件之通報等事項」（第 50 題）。
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ==================== 第二章 ==================== -->
+    <section class="chapter-card" id="ch2">
+        <div class="chapter-header">
+            <h2>第二章：基礎飛行原理</h2>
+            <span class="chapter-tag">題庫範圍：第 1 ～ 172 題</span>
+        </div>
+
+        <h3>1. 無人機系統架構：飛控、導航、動力與通訊</h3>
+        <ul>
+            <li><strong>三大主要次系統：</strong>包含 (1) <span class="term">【遙控無人機體】</span>、(2) <span class="term">【遙控設備】</span>、(3) <span class="term">【通訊及控制信號鏈路】</span>。
+                <ul>
+                    <li><strong>飛行載具包含：</strong>機體、燃料或電池、負載設備及酬載（⚠️ 注意：飛行載具<strong>不包含</strong>地面的「遙控設備」）。</li>
+                    <li><strong>地面控制站硬體：</strong>包含訊號傳輸設備、指令傳輸設備、資訊接收分析設備。</li>
+                    <li><strong>人為因素：</strong>無人機許多層面仍須由人員掌握操控，因此<span class="term">【人為因素】</span>在整體飛行過程中佔了極重要的一部分。</li>
+                </ul>
+            </li>
+            <li><strong>飛行控制系統（飛控系統）：</strong>
+                <ul>
+                    <li><strong>三大組成部分：</strong><span class="term">【感測器】</span>（作為飛控系統的<strong>輸入裝置</strong>，用以保持控制精度）、<span class="term">【機載計算機】</span>（隨感測器精度與任務複雜度上升，其<span class="term">【運算需求】</span>隨之提高）、<span class="term">【伺服器】</span>（執行機構）。</li>
+                    <li><strong>三大實現功能：</strong>姿態穩定和控制、任務管理、緊急控制模式。</li>
+                </ul>
+            </li>
+            <li><strong>導航系統（提供位置、速度、飛行姿態資訊）：</strong>
+                <ul>
+                    <li><span class="term">【非自主導航（如 GPS）】</span>：依賴外部衛星訊號，主要缺點為<strong><span class="num">易受干擾</span></strong>。</li>
+                    <li><span class="term">【自主導航（如慣性導航 INS）】</span>：不依賴外部訊號，主要缺點為<strong><span class="num">誤差積累增大</span></strong>（隨時間累積漂移）。</li>
+                    <li><strong>未來發展方向：</strong>朝高精度、高可靠度、高抗干擾發展；導航與自動避讓結合慣性導航、多感應器融合、GPS 與光電系統技術整合。</li>
+                </ul>
+            </li>
+            <li><strong>動力系統與無線通訊系統：</strong>
+                <ul>
+                    <li><strong>動力系統：</strong>朝體積小、重量輕、成本低、可靠度高發展；能量來源包括太陽能、氫能、鋰電池等。</li>
+                    <li><strong>無線通訊系統：</strong>負責命令與控制、資料鏈路，朝高速、寬頻、保密、抗干擾發展。其中<strong>控制鏈路</strong>為保密與抗干擾已全面採行<span class="term">【數位化】</span>；而<strong>圖傳（影像傳輸）</strong>資料傳輸形態則分為<span class="term">【類比、數位】</span>兩種方式。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2. 三大機型特性與起降方式比較</h3>
+        <p>所謂<span class="term">【航空器】</span>，係指任何藉空氣之<span class="term">【反作用力】</span>得以飛航於大氣中之器物。無人機比空氣重，需相對應的<span class="term">【能量】</span>並利用噴射推力或螺旋槳拉力產生<span class="term">【升力】</span>而在空中飛行。</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">機型類別</th>
+                        <th style="width: 45%;">飛行原理與性能優勢</th>
+                        <th style="width: 35%;">起降方式與限制</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="term">【遙控無人飛機】</span><br>（定翼機）</td>
+                        <td>飛行速度快、酬載大、飛行效率高，不需太複雜控制即可自行抵抗氣流保持穩定飛行。</td>
+                        <td><strong>缺點：</strong>需要有<span class="num">相當的跑道長度</span>供起降。<br><strong>輔助起飛：</strong>火箭助推、彈射軌道發射、人力拋擲。<br><strong>輔助降落：</strong>攔截網、纜線勾鎖、降落傘。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【遙控無人直昇機】</span></td>
+                        <td>透過主旋翼槳葉旋轉同時產生<span class="term">【向上的升力】</span>與<span class="term">【推力】</span>；具備自由調整姿態、定點盤旋、垂直起飛與落地能力。</td>
+                        <td>不需跑道即可垂直起降；主旋翼槳葉俯仰角愈大，<strong>升力愈大，扭力也愈大</strong>，需靠<span class="term">【尾旋翼】</span>抵消扭力並控制機頭方向（偏航）。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【無人多旋翼機】</span></td>
+                        <td>透過 <span class="num">3 個以上</span> 垂直旋翼間協調來控制姿態，採用<span class="term">【對稱的】</span>旋翼設計使操控簡單且直接。定距槳多旋翼比直昇機在機械結構、控制難度、姿態平穩度皆大幅提升，使飛行<strong>變得簡單</strong>。</td>
+                        <td>不需跑道，具備優秀的垂直起降、定點懸停、穩定升降及偏航能力。<strong>同時增加或減少每個旋翼升力</strong>即可實現<span class="term">【垂直的升降姿態】</span>。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>3. 空氣動力學：牛頓定律、流體力學、四力與阻力分類</h3>
+        <ul>
+            <li><strong>牛頓運動定律在飛行的應用：</strong>
+                <ul>
+                    <li><span class="term">【慣性（牛頓第一定律）】</span>：使靜止於地面的飛機保持靜止，或使固定空速直線行進的飛機持續保持穩定直線飛行。</li>
+                    <li><span class="term">【反作用力（牛頓第三定律）】</span>：噴射機將燃燒熱氣體往後推送，產生相等且相反的反作用力將飛機往前推進。</li>
+                    <li><strong>風對飛行的影響：</strong>於<strong>頂風（逆風）</strong>飛行時，地面速度會<span class="num">變慢</span>；若風從前方任一方向吹來且未修正，飛機的<span class="term">【航向】</span>會受風力而改變。操作人在遙控設備施加桿力，可改變無人機的<span class="term">【方向或速度】</span>。</li>
+                </ul>
+            </li>
+            <li><strong>飛行四力與平衡：</strong>
+                <ul>
+                    <li><span class="term">【推力】</span>：由<strong>發動機</strong>（動力系統產生拉力和推力）提供。</li>
+                    <li><span class="term">【阻力】</span>：由<strong>空氣</strong>產生，與飛機運動方向相反、阻礙前進。</li>
+                    <li><span class="term">【升力】</span>：由<strong>機翼或旋翼</strong>提供。</li>
+                    <li><span class="term">【重力】</span>：由<strong>地心引力</strong>產生（故機身設計採用<span class="num">較輕</span>材質）。</li>
+                    <li><strong>平衡狀態：</strong>當等速直線飛行時，<strong>縱軸（X 軸）</strong>方向阻力與推力大小相同、方向相反，縱軸合力為零，<strong>飛機速度不變</strong>；當高度保持時，<strong>垂直軸（Z 軸）</strong>方向升力與重力大小相同、方向相反，垂直軸合力為零，<strong>飛機無升降起伏</strong>。</li>
+                </ul>
+            </li>
+            <li><strong>流體力學兩大定律與升力形成：</strong>
+                <ul>
+                    <li><span class="term">【連續性定理】</span>：闡述流體流動中，<span class="num">流速和管道切面</span>（截面積）相關，進而延伸<span class="num">流速和壓力</span>也相關。</li>
+                    <li><span class="term">【柏努利定律】</span>：闡述流體流動中<span class="num">流速和壓力</span>的關係——<strong>「流速大的地方壓力小，流速小的地方壓力大」</strong>（流速越快，壓力越小）。</li>
+                    <li><strong>升力的誕生：</strong>基於連續性定理與柏努利定律，機翼上表面流速快壓力小、下表面流速慢壓力大，使機翼上下表面出現<span class="term">【壓力差】</span>；<strong>垂直於相對氣流方向的壓力差之總和，就是<span class="term">【機翼的升力】</span></strong>。</li>
+                </ul>
+            </li>
+            <li><strong>螺旋槳推進原理（必考細節）：</strong>
+                <ul>
+                    <li>螺旋槳推力藉由<span class="term">【槳葉本身的攻角設計】</span>與<span class="term">【螺旋槳轉速】</span>而成；轉速以<span class="num">每分鐘轉數 (RPM)</span> 表示。</li>
+                    <li>原廠設計高效率槳葉角度，係依據發動機及飛機的<span class="term">【轉速和空速】</span>作為基礎。</li>
+                    <li>⚠️ <strong>必考陷阱：</strong>一般螺旋槳攻角最大的位置在<span class="num">【槳葉根部】</span>！（因為根部旋轉半徑小、線速度最慢，必須設計最大的攻角才能與葉尖產生均衡的推力）。</li>
+                </ul>
+            </li>
+            <li><strong>各類阻力完整解析（高頻考點）：</strong>
+                <ul>
+                    <li><span class="term">【寄生阻力】</span>包含以下三種：
+                        <ol>
+                            <li><span class="term">【摩擦阻力】</span>：因空氣具有<span class="term">【粘性】</span>，流經飛機表面摩擦所產生。大小決定於：<strong>空氣的粘性</strong>（越大阻力越大）、<strong>飛機表面狀況</strong>（越粗糙阻力越大；表面相對光滑則摩擦阻力較小）、<strong>接觸之飛機表面積</strong>（越大阻力越大）。</li>
+                            <li><span class="term">【形狀阻力】</span>：由<strong><span class="num">前後壓力差</span></strong>所形成的阻力（例如：人在逆風中行走所感受到的阻力）。</li>
+                            <li><span class="term">【干擾阻力】</span>：無人機各部分之間因<strong><span class="num">氣流相互干擾</span></strong>而產生的額外阻力，容易產生在<strong>機身和機翼、機身和尾翼、機翼和外掛載、機翼與發動機短艙</strong>等接合部位。</li>
+                        </ol>
+                    </li>
+                    <li><span class="term">【誘導阻力】</span>：因機翼產生<strong>升力伴隨翼尖渦流</strong>而發生的阻力，是無人機為產生<span class="term">【升力】</span>而須付出的一種代價。</li>
+                    <li><span class="term">【震波阻力】</span>：高速遙控無人機除了上述四種阻力外，接近音速時還會另外產生震波阻力。</li>
+                </ul>
+            </li>
+            <li><strong>影響升力與阻力的四大關鍵因素：</strong>升力與阻力是在飛機與空氣間的<span class="term">【相對運動（相對氣流）】</span>中產生。
+                <ol>
+                    <li><span class="term">【攻角 (Angle of Attack)】</span>：定義為<strong>相對氣流方向與翼弦所夾的角度</strong>。得到最大升力的攻角稱為<span class="term">【臨界攻角】</span>；在小於臨界攻角範圍內增大攻角，<span class="num">升力增大</span>（超過臨界攻角則氣流分離導致失速）。</li>
+                    <li><strong>空氣密度與相對氣流速度：</strong>空氣密度越大、相對氣流速度越快，<strong>升力和阻力都會越大</strong>。</li>
+                    <li><strong>機翼面積：</strong>機翼面積越大，<strong>升力和阻力都會越大</strong>，且升力和阻力都與機翼面積大小<strong><span class="num">成正比</span></strong>。</li>
+                    <li><strong>機翼形狀：</strong>切面形狀的相對厚度、最大厚度位置、平面形狀、襟翼和前緣翼縫位置、表面光滑狀況，皆會影響升力與阻力。</li>
+                </ol>
+            </li>
+        </ul>
+
+        <h3>4. 無人飛機構造、三軸控制與飛行特性</h3>
+        <ul>
+            <li><strong>主要組成構造：</strong>
+                <ul>
+                    <li><span class="term">【機翼】</span>：主要功用是產生<strong>升力</strong>，亦具有<strong>穩定和操作</strong>的作用。機翼上一般安裝<span class="term">【副翼和襟翼】</span>，還可安裝發動機、起落架、外掛載。</li>
+                    <li><span class="term">【機身】</span>：用來裝載油箱、酬載及各種設備。</li>
+                    <li><span class="term">【尾翼】</span>：分為<strong>水平尾翼</strong>（包含<strong>固定的<span class="term">【水平安定面】</span></strong>和<strong>可動的<span class="term">【升降舵】</span></strong>）與<strong>垂直尾翼</strong>（包含<strong>固定的<span class="term">【垂直安定面】</span></strong>和<strong>可動的<span class="term">【方向舵】</span></strong>）。</li>
+                    <li><span class="term">【起落架】</span>：由<strong>減震支柱和機輪</strong>組成，於起飛、著陸滑跑、地面滑行和停放時支撐飛機。</li>
+                    <li><span class="term">【動力系統】</span>：常見有航空活塞式發動機加螺旋槳、渦輪噴氣發動機、渦輪螺旋槳及渦輪扇/導風扇發動機。</li>
+                    <li>⚠️ <strong>必考陷阱（第 101 題）：</strong>無人飛機上通常<strong>不會安裝<span class="term">【飛行儀表】</span></strong>（因為機上無座艙飛行員，數據是透過通訊設備傳回地面站，機上仍會安裝通訊、導航及安全設備）。</li>
+                </ul>
+            </li>
+            <li><strong>三軸與舵面操控邏輯（一律以相對於<span class="term">【機體中心】</span>思考上下左右）：</strong>
+                <ul>
+                    <li><span class="term">【縱軸 (X 軸)】</span>：由前往後穿過航空器的軸，控制<strong>滾轉 (Roll)</strong>。主要由<span class="term">【副翼】</span>控制（此外，<span class="term">【方向舵】</span>對滾轉也會有影響）。
+                        <br>👉 當副翼控制<strong>「右上左下」</strong>時，機體作<span class="num">右滾</span>；當副翼控制<strong>「右下左上」</strong>時，機體作<span class="num">左滾</span>。</li>
+                    <li><span class="term">【橫軸 (Y 軸)】</span>：由左往右穿過機翼的軸，由<span class="term">【升降舵】</span>控制<strong>俯仰 (Pitch)</strong>。</li>
+                    <li><span class="term">【垂直軸 (Z 軸)】</span>：上下兩面垂直穿過航空器的軸，由<span class="term">【方向舵】</span>控制<strong>偏航 (Yaw)</strong>。
+                        <br>👉 當方向舵控制往右，機體作<span class="num">右偏航</span>；控制往左，機體作<span class="num">左偏航</span>。</li>
+                </ul>
+            </li>
+            <li><strong>三大操作原理特性與四大基本動作：</strong>
+                <ul>
+                    <li><span class="term">【平衡性】</span>：處於平衡狀態表示其<strong>速度的大小和方向都保持不變</strong>。</li>
+                    <li><span class="term">【穩定性】</span>：取決於<strong>重心位置、飛行速度和高度、攻角的變化</strong>。穩定性強代表受到擾動後：<strong>擺動衰減時間短、擺動幅度小、擺動次數少</strong>。</li>
+                    <li><span class="term">【操縱性】</span>：操縱升降舵、方向舵和副翼改變飛行狀態的特性。操縱性好代表：<strong>操縱動作簡單、操縱省力、操縱反應快</strong>。</li>
+                    <li><strong>四大基本動作：</strong><span class="num">平直飛行、轉彎、爬升、下降</span>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>5. 無人直昇機基本飛行動作定義</h3>
+        <ul>
+            <li><strong>升力與推力關係：</strong>主旋翼產生升力原理類似「無人飛機機翼產生升力」與「螺旋槳產生推力」。主旋翼旋轉面保持水平時，產生<strong>垂直向上</strong>的力；當<strong>升力與推力大於重力與阻力</strong>時，運動方向為<span class="num">垂直向上</span>。</li>
+            <li><strong>各項標準動作保持不變之狀態（題庫第 127～138 題連環考點）：</strong>
+                <ul>
+                    <li><span class="term">【垂直起飛到懸停】</span>：垂直飛離地面約 <span class="num">2 ～ 3 呎</span>，並保持<strong>航向不變</strong>。</li>
+                    <li><span class="term">【懸停轉彎】</span>：在懸停高度執行機鼻向左或向右轉，保持<strong>相對於地面的位置</strong>不變，且保持<strong>高度、轉彎率、轉速</strong>不變。</li>
+                    <li><span class="term">【向前 / 側向 / 向後懸停飛行】</span>：移動到另一特定位置（無法向前時改用側向或向後），三者皆需保持<strong>地面速度、高度、航向</strong>不變。</li>
+                    <li><span class="term">【平直飛行】</span>：保持<strong>高度不變和航向不變</strong>。</li>
+                    <li><span class="term">【傾斜轉彎】</span>：保持向左或向右傾斜狀態，保持<strong>高度不變，但航向改變</strong>。</li>
+                    <li><span class="term">【偏航】</span>：利用尾旋翼推力執行<strong>改變航向</strong>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>6. 載重平衡：重量與重心位置的影響（超高頻考區）</h3>
+        <ul>
+            <li><strong>基本原則：</strong><span class="term">【重量和重心位置】</span>是同時影響飛行性能與飛航安全的重要因素。重力的著力點稱為<span class="term">【重心】</span>，與<strong>穩定性</strong>有很大關聯；超出允許範圍會導致無法穩定起飛、無法穩定落地及失速。</li>
+            <li><strong>環境與姿態力學：</strong>在<strong>高海拔、高溫、高濕度</strong>情況下會降低飛行性能的載重因素。飛行時為產生各種姿態，作用於機身上的力<strong>升力通常較重量為大</strong>。轉彎時，轉彎率隨速度不同是為了抵銷所增加的<span class="term">【離心力】</span>以保持負載係數不變，且轉彎時需<strong><span class="num">增加攻角</span></strong>以補償升力的不足。</li>
+        </ul>
+
+        <div class="grid-2">
+            <div class="sub-card">
+                <h4>📌 重心靠前 vs. 重心後移的影響</h4>
+                <ul>
+                    <li><strong>重心位置靠前（機頭沉重）：</strong>
+                        <ul>
+                            <li>需要尾翼提供<strong>更大的向下的升力</strong>以維持俯仰平衡。</li>
+                            <li>起飛離地<strong>較為困難</strong>。</li>
+                            <li><strong>增大誘導阻力</strong>，導致<strong>油耗增加、航程距離降低</strong>。</li>
+                            <li>提高了<strong>不穩定進場的風險</strong>。</li>
+                        </ul>
+                    </li>
+                    <li><strong>重心位置後移（機頭較輕）：</strong>
+                        <ul>
+                            <li>起飛時可能發生<strong>提前仰轉</strong>；爬升時可能因仰角過大造成<strong>失速與機尾擦地</strong>。</li>
+                            <li>配平及總阻力減小，進而導致<strong>油耗減少、續航能力增加、失速速度減小</strong>（但穩定性變差）。</li>
+                            <li><strong>無人直昇機</strong>重心太靠後：影響<strong>高速前飛性能及穩定</strong>。</li>
+                            <li><strong>無人多旋翼機</strong>重心移動：造成<strong>操控較為困難</strong>。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="sub-card">
+                <h4>📌 重量增加對飛行的 7 大影響</h4>
+                <p>當遙控無人機重量增加時，會導致以下連鎖反應：</p>
+                <ol>
+                    <li><strong>提高</strong>起飛速度。</li>
+                    <li><strong>加長</strong>起飛滑行距離。</li>
+                    <li><strong>降低</strong>爬升率和爬升角度。</li>
+                    <li><strong>降低</strong>飛航最高高度（升限降低）。</li>
+                    <li><strong>降低</strong>操作性能。</li>
+                    <li><strong>提高</strong>進場和降落速度。</li>
+                    <li><strong>加長</strong>降落滾行距離。</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 第三章 ==================== -->
+    <section class="chapter-card" id="ch3">
+        <div class="chapter-header">
+            <h2>第三章：氣象</h2>
+            <span class="chapter-tag">題庫範圍：第 1 ～ 82 題</span>
+        </div>
+
+        <h3>1. 空氣密度、密度高度與國際標準大氣 (ISA)</h3>
+        <ul>
+            <li><strong>空氣密度與升力：</strong>空氣可藉由外界作功達到<strong>壓縮及膨脹</strong>。當空氣密度增加時，飛機<strong>升力增加</strong>。影響空氣密度的三大因素為：<strong>高度、溫度、濕度</strong>（⚠️ 題庫陷阱：<strong>不包含「應力」</strong>）。於固定體積下，升溫時空氣密度減少，降溫時空氣密度<strong>增加</strong>。</li>
+            <li><strong><span class="term">【密度高度 (Density Altitude)】</span>（必考反向觀念）：</strong>
+                <ul>
+                    <li><strong>空氣分子少且稀薄 ＝ <span class="num">高密度高度</span></strong>（升力差、性能降低）：常出現於<strong>高海拔、高溫、非常潮濕、低大氣壓力</strong>之處；比較<strong>不會</strong>出現於<span class="num">低海拔處</span>。</li>
+                    <li><strong>空氣分子多且濃厚 ＝ <span class="num">低密度高度</span></strong>（升力好、性能佳）：常出現於<strong>大氣壓力極高、低海拔、乾燥</strong>之處；比較<strong>不會</strong>出現於<span class="num">高溫處</span>。</li>
+                </ul>
+            </li>
+            <li><strong>對流層與大氣壓力量測：</strong>
+                <ul>
+                    <li><strong>對流層特性：</strong>溫度及壓力均隨高度增加而<span class="num">降低</span>。</li>
+                    <li><span class="term">【國際標準大氣 (ISA)】</span>：各國公認之參考校正基準。海平面標準大氣壓力為 <span class="num">29.92 英吋汞柱 (inHg)</span>，換算成毫巴值等於 <span class="num">1013.2 毫巴 (mb/hPa)</span>（⚠️ 第 10 題錯誤選項寫 1017.2 毫巴！）。高度每上升 <span class="num">1,000 英呎</span>，氣壓值減少約 <span class="num">1 英吋汞柱</span>。</li>
+                    <li><strong>氣壓差與高度表修正：</strong>大氣壓力實際值與標準值存在差距，係受<span class="term">【地面溫度不平均】</span>影響；若操作人未注意差距並適時修正，將無法精確掌握<span class="term">【實際高度】</span>。</li>
+                    <li><strong>氣壓趨勢與天氣好壞：</strong>氣壓值向上提升代表<strong>天氣好轉</strong>；氣壓值向下降低代表<strong>天氣轉壞</strong>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>2. 風、地形亂流與低空風切</h3>
+        <ul>
+            <li><strong>風的定義與起降原則：</strong>空氣的<strong>水平運動</strong>稱為<span class="term">【風】</span>，風速單位有公尺/每秒 (m/s)、公里/每小時 (km/h)、海浬/每小時 (kts)（不含公斤/每小時 kg）。天氣因素可能影響無人機之<strong>飛行航向</strong>。</li>
+            <li><strong>逆風起降優勢：</strong>無人機通常應於<span class="num">逆風</span>下起降；逆風起飛可<strong>增加穩定性、增加操縱性、減少起飛距離</strong>（不會減少操縱性）。</li>
+            <li><strong>地形與山區亂流：</strong>飛經<span class="term">【深山峽谷區】</span>較易遭受亂流影響。強風吹過多山地區時，<span class="term">【迎風面】</span>飛行較為平順，而過了山巔的<span class="term">【背風面】</span>風場會漸趨不平穩並產生強烈亂流。</li>
+            <li><strong><span class="term">【低空風切】</span>（致命威脅）：</strong>
+                <ul>
+                    <li>無人機於任何高度遭遇不同風切狀況中，以<span class="term">【低空風切】</span>對其操控性影響最大（因離地近、無緩衝高度）。</li>
+                    <li>起降階段突遇風速與風向明顯改變（風切），會改變飛行姿態、飛行軌跡、所獲升力，但<strong>不會改變<span class="num">最大載重</span></strong>。</li>
+                    <li>臺灣地區低空風切特性：於<strong>鋒面過境時較為強烈，西南季風吹拂時較為溫和</strong>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3. 濕度、露點、霧的分類與除霜積冰</h3>
+        <ul>
+            <li><strong>水氣、相對濕度與露點：</strong>
+                <ul>
+                    <li>一定量空氣於一定溫度下所能容納之<span class="term">【水氣量】</span>有限度，且與<span class="term">【溫度】</span>有密切關係。當水氣含量達最高限度（飽和）時，相對濕度為 <span class="num">1</span>（即 100%）。</li>
+                    <li><span class="term">【相對濕度】</span>：空氣中實際所含水氣量，與相同溫度下可含最大水氣量之百分比。</li>
+                    <li>⚠️ <strong>重要觀念（第 35 題）：</strong>空氣中<strong>濕度越高，會導致<span class="num">空氣密度越低</span></strong>（因為水分子的分子量比乾燥空氣輕，濕空氣取代乾空氣會使密度下降、升力降低）。</li>
+                    <li><span class="term">【露點溫度】</span>：當空氣溫度下降等於露點溫度時，即達到<span class="term">【水氣飽和點】</span>。已飽和水氣遇溫度持續下降會凝結產生雲、霧、雨滴（但<strong>不會</strong>直接產生「風」或「雷爆」）。</li>
+                </ul>
+            </li>
+            <li><strong>五大「霧」的成因與特性比較（常用分類不含「高空霧」）：</strong>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 22%;">霧的種類</th>
+                                <th style="width: 78%;">形成條件、季節與消散特性（必考對比）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="term">【平流霧】</span></td>
+                                <td>暖濕空氣水平流經冷地表形成，與<strong>大氣垂直運動無直接關係</strong>。多發生於沿海區域、相對濕度高、<strong>不容易消散</strong>（⚠️ 說日出後消散快速是錯的！）。唯有<strong><span class="num">風向轉變</span></strong>有助於平流霧消散。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="term">【輻射霧】</span></td>
+                                <td>夜間地面輻射冷卻形成，大都發生於<strong>冬季</strong>，通常地面風速微弱、空氣穩定，<strong>日出後漸漸消散</strong>（相較於平流霧<strong>比較容易</strong>消散）。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="term">【蒸氣霧】</span></td>
+                                <td><strong>冷空氣流經溫暖水面</strong>，因蒸發作用使水氣增加而凝結，常出現於<strong><span class="num">秋冬季節</span></strong>。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="term">【鋒面霧】</span></td>
+                                <td>於兩股不同性質氣團交界面，空氣自高空往下移動至近地面較冷空氣而凝結，多伴隨<strong><span class="num">鋒面</span></strong>天氣現象發生。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="term">【平流輻射霧】</span></td>
+                                <td>由平流和輻射兩種物理過程相輔相成所造成之霧。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
+            <li><strong>露、霜與空中積冰：</strong>
+                <ul>
+                    <li>氣溫降至低於露點，水氣凝結成水滴附著於地表或建築物稱為<span class="term">【露】</span>；若凝結成固態<span class="term">【霜】</span>附著於機體表面，飛行時會<strong>擾動流經機翼之空氣、降低升力、增加阻力</strong>（絕不會增加飛航效率），對飛安造成危害。故於大陸型氣候執行深秋早晨飛行前，務必進行<span class="term">【除霜程序】</span>。</li>
+                    <li><span class="term">【積冰現象】</span>：當無人機飛越<strong>可見水氣（如雨或雲）</strong>且機體周遭氣溫為 <strong><span class="num">0°C 或 0°C 以下</span></strong> 時，<strong>機翼翼面、尾翼翼面、感測器</strong>皆可能發生積冰，導致<strong>影響或誤判遙控無人機飛行性能表現</strong>。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>4. 雲族分類、氣團、鋒面與雷雨三階段</h3>
+        <ul>
+            <li><strong>雲的型態與高度三族分類：</strong>雲依型態分為積狀雲、層狀雲、卷狀雲；依所在高度分為三族：
+                <ul>
+                    <li><span class="term">【高雲族】</span>（高度約 <span class="num">6,000 公尺以上</span>）：包含<strong>卷雲、卷層雲、卷積雲</strong>（記憶法：名稱皆有「卷」字）。</li>
+                    <li><span class="term">【中雲族】</span>（高度約 <span class="num">2,000 ～ 6,000 公尺</span>）：包含<strong>高積雲、高層雲、雨層雲</strong>。</li>
+                    <li><span class="term">【低雲族】</span>（高度位於 <span class="num">2,000 公尺以下</span>）：包含<strong>積雲、層雲、層積雲</strong>。</li>
+                </ul>
+            </li>
+            <li><strong>大氣穩定度、氣團與鋒面：</strong>
+                <ul>
+                    <li>大氣穩定度與<span class="term">【空氣流動方向】</span>有直接關係。熱帶地區城市如<strong><span class="num">新加坡</span></strong>因對流旺盛，較易發生午後雷陣雨。</li>
+                    <li><span class="term">【氣團】</span>：於地表特殊地區生成、停留時間長且水平方向物理性質（溫度及濕度）一致之廣大空氣體。依源地緯度、大陸或海洋、所經地面冷暖分類；冷於周遭空氣稱為<span class="term">【冷氣團】</span>，氣團穩定度決定籠罩區域的<strong>天氣形態</strong>。</li>
+                    <li><span class="term">【鋒面】</span>：鋒面兩側的<strong>溫度、濕度、風、天氣</strong>均有明顯差異，飛經鋒面區會遭遇上述劇烈變化。當冷空氣前進迫使暖空氣後退取代原位置稱為<span class="term">【冷鋒】</span>；當冷暖氣團勢均力敵呈滯留狀態稱為<span class="term">【滯留鋒】</span>。</li>
+                </ul>
+            </li>
+            <li><strong>雷雨的發展循環三階段（⚠️ 不包含「重疊期」）：</strong>
+                <ol>
+                    <li><span class="term">【發展期】</span>：以持續上升氣流為主的積雲階段。</li>
+                    <li><span class="term">【成熟期】</span>：天氣最劇烈，特徵為<strong>開始降水、強烈下沉氣流、打雷</strong>。</li>
+                    <li><span class="term">【消散期】</span>：特徵為<strong>降雨減緩、下沉氣流減緩、雷雨雹消散</strong>。</li>
+                </ol>
+            </li>
+        </ul>
+
+        <h3>5. 航空氣象服務與例行天氣報告 (METAR) 判讀</h3>
+        <ul>
+            <li><strong>氣象機構與資訊取得管道：</strong>
+                <ul>
+                    <li><strong>臺北航空氣象中心</strong>隸屬於<span class="term">【交通部民用航空局飛航服務總臺】</span>。</li>
+                    <li>透過<strong>中央氣象署（原中央氣象局）網頁</strong>可取得：天氣觀測資料、天氣預報資料、衛星雲圖（以上皆是）。</li>
+                    <li>⚠️ <strong>必考陷阱（第 73 題）：</strong>透過飛航服務總臺建置之<strong>航空氣象服務網 (AOAWS)</strong> 可取得之資料，題庫標準答案僅為 <strong>(A) <span class="term">【國內外主要機場之即時觀測資料】</span></strong>！</li>
+                </ul>
+            </li>
+            <li><strong><span class="term">【航空氣象報文】</span>基礎判讀規則：</strong>終端機場天氣觀測報中，盛行天氣現象包括<strong>風向風速、能見度、天氣狀況及雲組</strong>。
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 28%;">報文項目</th>
+                                <th style="width: 72%;">編報方式、代碼與單位（必背）</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>觀測日期與時間</strong></td>
+                                <td>使用 <span class="num">Z 字母指示碼</span>，代表 <span class="term">【UTC 時間】</span>（世界協調時間）。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>盛行能見度值</strong></td>
+                                <td>編報方式為 <span class="num">4 碼</span>，單位為 <span class="num">公尺 (m)</span>。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>雲底高度單位</strong></td>
+                                <td>雲層之雲底高度單位為 <span class="num">呎 (ft)</span>（⚠️ 注意：能見度用公尺，雲底高度用呎！）。</td>
+                            </tr>
+                            <tr>
+                                <td><strong>雲量類別（天空劃分 8 等份）</strong></td>
+                                <td>
+                                    • 遮蓋 <span class="num">1/8 至 2/8</span>：稱為 <span class="term">【稀雲 (FEW)】</span><br>
+                                    • 遮蓋 <span class="num">3/8 至 4/8</span>：稱為 <span class="term">【疏雲 (SCT)】</span><br>
+                                    • 遮蓋 <span class="num">5/8 至 7/8</span>：稱為 <span class="term">【裂雲 (BKN)】</span><br>
+                                    • 遮蓋 <span class="num">8/8</span>（全滿）：稱為 <span class="term">【密雲 (OVC)】</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ==================== 第四章 ==================== -->
+    <section class="chapter-card" id="ch4">
+        <div class="chapter-header">
+            <h2>第四章：緊急處置與飛行決策</h2>
+            <span class="chapter-tag">題庫範圍：第 1 ～ 43 題</span>
+        </div>
+
+        <h3>1. 影響操作安全之生理與心理因素（人為因素）</h3>
+        <p><span class="term">【人為因素】</span>與飛航安全密切相關，已成為維修部門及飛航管理部門關切的焦點。主要影響安全操作的生理與心理狀況包括：<strong>過度換氣、壓力、疲勞、脫水、熱中暑、酒精與藥物</strong>。</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">生理 / 心理狀況</th>
+                        <th style="width: 45%;">成因與常見症狀</th>
+                        <th style="width: 35%;">預防與正確處置方式</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="term">【酒精與藥物】</span></td>
+                        <td>
+                            • <strong>酒精：</strong>影響操作及判斷、難掌握周邊變化、身體協調性變差、視界窄化、降低邏輯能力及注意力低落。<br>
+                            • <strong>一般成藥：</strong>如<span class="term">【抗組織胺】</span>（感冒/過敏藥）或<span class="term">【解除充血劑】</span>（鼻塞藥），會產生<strong>暈眩或感知功能不全</strong>。
+                        </td>
+                        <td>執行任務前及過程中，嚴格確保參與成員不受酒精及藥物影響。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【過度換氣】</span></td>
+                        <td>呼吸過快導致體內二氧化碳過度排出；若無法善加控制，會進入<strong><span class="num">意識不清</span></strong>狀態。<br><strong>常見症狀：</strong>視界窄化、意識不清、輕快或暈眩感、肢體末梢刺痛感、對冷熱敏感、肌肉痙攣感。</td>
+                        <td><strong>核心原理：</strong>讓<span class="term">【血液裡的二氧化碳濃度恢復到正常狀態】</span>。<br><strong>矯治方法：</strong>讓呼吸保持正常、<strong>朝向紙袋呼吸</strong>或<strong>大聲交談</strong>。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【壓力】</span></td>
+                        <td>人體對生理及心理需求做出的反應。壓力源包含：<strong>物理壓力</strong>（噪音、振動）、<strong>生理壓力</strong>（疲勞）、<strong>心理壓力</strong>（工作困難、個人情緒）。<br>持續性急性壓力會發展成<strong>長期的慢性壓力</strong>，導致<strong>個人能力大幅下滑</strong>。</td>
+                        <td>當體驗到壓力已導致己身能力下滑時，應立即<strong><span class="num">暫停執行任務、適當休息</span></strong>。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【疲勞】</span></td>
+                        <td>分為生理性、心理性、急性（通常為<strong>短期</strong>）與慢性疲勞。會導致注意力渙散、專注力下降、協調性及溝通性降低。<br>• 忽略急性疲勞會變成<span class="term">【慢性疲勞】</span>（虛弱、強烈疲倦、心悸、呼吸不順、頭痛、沮喪與焦慮）。<br>• <span class="term">【技能疲勞】</span>：急性疲勞中的特殊情況，造成<strong>時機掌握混亂</strong>及<strong>視域過度聚焦</strong>。</td>
+                        <td>充足休息與睡眠；操作前藉由<strong>計畫、整理、排序工作任務</strong>進行有效的工作量管理。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【脫水】</span></td>
+                        <td>身體組織水分不足。成因：長時間處於高溫/高濕度/高海拔環境、心理壓力、飲用過多刺激性飲料。<br><strong>最先出現症狀：</strong>口乾、舌燥、較強的疲勞感。</td>
+                        <td>隨時掌握生理狀況，並<strong><span class="num">適時補充水分</span></strong>。</td>
+                    </tr>
+                    <tr>
+                        <td><span class="term">【熱中暑】</span></td>
+                        <td>指身體<strong>無法對體溫進行控制</strong>，原因是<strong>身體的熱無法排出</strong>。</td>
+                        <td>避免方法為<strong><span class="num">規律攝取足量水份</span></strong>。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>2. 狀況警覺、飛航前檢查與緊急處置程序</h3>
+        <ul>
+            <li><strong><span class="term">【狀況警覺 (Situational Awareness)】</span>：</strong>指對<strong>飛行作業、操作人、航空器、環境及任務種類</strong>等風險元素的認知與瞭解。當操作人處於<strong>疲勞、壓力、工作量過多</strong>時，容易過度集中注意力在某件事物（注意力窄化），而失去對整體任務的掌握。</li>
+            <li><strong>起飛前檢查：</strong>操作人應於<span class="num">每次操作前</span>對無人機進行起飛前檢查；若檢查中發現任何異常狀況，<strong>應立即修正以確保安全</strong>（絕不可忽略或僅記錄就繼續飛）。</li>
+            <li><strong>緊急落地與緊急應變：</strong>
+                <ul>
+                    <li><strong>緊急落地三大類型：</strong><span class="term">【迫降】</span>、<span class="term">【預防性緊急著陸】</span>、<span class="term">【水上迫降】</span>。</li>
+                    <li>若平時沒有熟悉緊急應變之處置程序，面對緊急狀況時操作人可能會陷入<strong>「遙控無人機即將墜地」</strong>的慌亂情境中。</li>
+                    <li>⚠️ <strong>必考陷阱（第 35 題）：</strong>當遙控無人機發生異常或緊急事件時，應先穩定操作，掌握無人機位置及高度，接著再採取 <strong>(C) <span class="term">【尋找最佳的緊急落地處】</span></strong>！（注意：這題答案<strong>不是</strong>「以上皆是」，優先把飛機安全降落到最佳緊急落地處才是第一要務）。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>3. 飛行決策 (ADM) 與風險管理</h3>
+        <ul>
+            <li><strong><span class="term">【飛行決策】</span>的核心：</strong>基於經驗的累積及判斷集合而成，著重於<strong>學習決策方案、評估決策方案、選擇決策方案</strong>。</li>
+            <li><strong><span class="term">【風險管理】</span>手段與基本原則：</strong>
+                <ul>
+                    <li><strong>三大降低風險手段：</strong>主動辨識危害因子，並透過<span class="term">【迴避】</span>、<span class="term">【減少】</span>、<span class="term">【隔離】</span>降低到可接受之程度。</li>
+                    <li><strong>操作人降低己身風險方法：</strong>辨識己身風險、預知己身風險、覺察己身風險。</li>
+                    <li><strong>飛行決策三大基本原則：</strong>(1) 不接受非相關的風險、將風險設定在合適的層級；(2) 在獲益超過危害時接受風險；(3) 將風險管理整合在飛行各階段的計劃過程中。</li>
+                </ul>
+            </li>
+            <li><strong>危險心態干擾（必考陷阱第 39 題）：</strong>
+                <ul>
+                    <li>操作人執行操作時，會降低飛行決策品質的危險心態干擾為：<strong><span class="term">【反威權、衝動及僥倖】</span></strong>（答案選 A；選項 B 的「服從」與選項 C 的「積極順應」屬於正面態度，故<strong>不可</strong>選「以上皆是」）。</li>
+                </ul>
+            </li>
+            <li><strong><span class="term">【自動決策模式（反射性模式）】</span>：</strong>
+                <ul>
+                    <li>其形成的重要基礎是依賴平時<strong><span class="num">大量的訓練及經驗</span></strong>。</li>
+                    <li>常用於：<strong>緊急情況、無法預作分析的情況、無法沙盤推演的情況</strong>。</li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ==================== 必考陷阱總整理 ==================== -->
+    <section class="chapter-card" id="traps">
+        <div class="chapter-header">
+            <h2>🎯 考前必看：題庫「非以上皆是」與高頻易錯陷阱總整理</h2>
+            <span class="chapter-tag">搶分關鍵速查</span>
+        </div>
+        <p>無人機學科題庫中有許多題目的答案是「(D) 以上皆是」，但以下這 <strong>12 道題目</strong> 設有誘答陷阱，千萬不能直覺選 (D) 或字面相近的選項：</p>
+
+        <div class="trap-box">
+            <div class="box-title">1. 安全距離限制（第一章 第 91 題）</div>
+            <p>選項 (A) 距高速公路 10 公尺、(B) 距高架鐵路 20 公尺 都是錯誤數字！唯一正確答案是 <strong>(C) 應至少距建築物及障礙物範圍 <span class="num">30 公尺以上</span></strong>。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">2. 飛行載具包含哪些項目？（第二章 第 2 題）</div>
+            <p>「遙控無人機系統之飛行載具」包含 <strong>(C) 機體、燃料或電池、負載設備及酬載</strong>。千萬別選包含「遙控設備」的 (D)，因為遙控器在地面上，不屬於飛在天上的飛行載具！</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">3. 飛控系統的「輸入裝置」是什麼？（第二章 第 9 題）</div>
+            <p>用以保持控制精度的輸入裝置是 <strong>(B) <span class="term">【感測器】</span></strong>，不是 (D) 以上皆是（機載計算機是處理裝置，伺服器是輸出執行裝置）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">4. 非自主導航 (GPS) vs. 自主導航 (慣性導航) 的缺點（第二章 第 12、13 題）</div>
+            <p>• 非自主導航（如 GPS）缺點是 <strong>(B) <span class="num">易受干擾</span></strong>。<br>• 自主導航（慣性導航）缺點是 <strong>(C) <span class="num">誤差積累增大</span></strong>。<br>這兩題答案都不是 (D) 以上皆是！</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">5. 螺旋槳攻角最大的位置在哪裡？（第二章 第 54 題）</div>
+            <p>一般螺旋槳攻角最大的位置在 <strong>(A) <span class="num">槳葉根部</span></strong>（非葉尖，也不是以上皆是）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">6. 無人飛機上通常「不會」安裝哪種設備？（第二章 第 101 題）</div>
+            <p>答案是 <strong>(A) <span class="term">【飛行儀表】</span></strong>（因為機上沒有真人飛行員看儀表板；機上仍會裝通訊、導航與安全設備）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">7. 控制無人機思考「上下左右」的基準？（第二章 第 118 題）</div>
+            <p>操作人應以相對於 <strong>(A) <span class="term">【機體中心】</span></strong> 來思考上下左右，不可選 (D) 以上皆是。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">8. 多旋翼機重心移動會造成什麼結果？（第二章 第 164 題）</div>
+            <p>答案是 <strong>(B) <span class="num">操控較為困難</span></strong>（不會讓升力增加或阻力減少，勿選 D）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">9. 低密度高度 vs. 高密度高度不會出現在哪裡？（第三章 第 5、6 題）</div>
+            <p>• <strong>高密度高度（空氣稀薄）</strong>比較不會出現於：<strong>(A) 低海拔處</strong>。<br>• <strong>低密度高度（空氣濃密）</strong>比較不會出現於：<strong>(D) 高溫處</strong>。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">10. 航空氣象服務網 (AOAWS) 可取得哪項資料？（第三章 第 73 題）</div>
+            <p>題庫唯一標準答案為 <strong>(A) <span class="term">【國內外主要機場之即時觀測資料】</span></strong>（這題甚至沒有「以上皆是」選項，切勿誤選 B、C、D）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">11. 發生異常或緊急事件時的下一步動作？（第四章 第 35 題）</div>
+            <p>先穩定操作、掌握無人機位置及高度後，再採取 <strong>(C) <span class="term">【尋找最佳的緊急落地處】</span></strong>（不是選 D 以上皆是！）。</p>
+        </div>
+
+        <div class="trap-box">
+            <div class="box-title">12. 哪種心態干擾會降低飛行決策品質？（第四章 第 39 題）</div>
+            <p>答案是 <strong>(A) <span class="term">【反威權、衝動及僥倖】</span></strong>（因為 B 有「服從」、C 有「積極順應」，故不可選 D 以上皆是）。</p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function filterContent() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        const sections = document.querySelectorAll('.chapter-card');
+        
+        sections.forEach(sec => {
+            if (!query) {
+                sec.style.display = 'block';
+                return;
+            }
+            const text = sec.innerText.toLowerCase();
+            sec.style.display = text.includes(query) ? 'block' : 'none';
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第三章：氣象（82題）｜Anki 間隔重複 (SRS) 記憶卡系統</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #dbeafe;
+            --secondary: #0284c7;
+            --again: #dc2626;
+            --again-bg: #fef2f2;
+            --hard: #ea580c;
+            --hard-bg: #fff7ed;
+            --good: #16a34a;
+            --good-bg: #f0fdf4;
+            --easy: #2563eb;
+            --easy-bg: #eff6ff;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0284c7 100%);
+            color: white;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+        header h1 {
+            font-size: 1.55rem;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        header p {
+            font-size: 0.92rem;
+            opacity: 0.9;
+        }
+        .container {
+            max-width: 880px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+        /* Top Dashboard */
+        .srs-dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        .stat-num {
+            font-size: 1.65rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .stat-new .stat-num { color: #2563eb; }
+        .stat-learn .stat-num { color: #dc2626; }
+        .stat-review .stat-num { color: #d97706; }
+        .stat-grad .stat-num { color: #16a34a; }
+
+        /* Controls Bar */
+        .toolbar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        select, .btn-tool {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+        }
+        .btn-tool:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+        .btn-tool.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Progress Bar */
+        .progress-wrap {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 99px;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #16a34a);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Flashcard Area */
+        .flashcard {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+            padding: 28px 26px;
+            min-height: 410px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .card-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .badge-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+        .badge-no { background: #0f172a; color: white; }
+        .badge-cat { background: #e0f2fe; color: #0369a1; }
+        .badge-status-new { background: #dbeafe; color: #1d4ed8; }
+        .badge-status-learning { background: #fee2e2; color: #b91c1c; }
+        .badge-status-graduated { background: #dcfce7; color: #15803d; }
+        .srs-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            line-height: 1.55;
+        }
+
+        /* Interactive Options on Card Front */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+        .opt-btn {
+            text-align: left;
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .opt-btn:hover:not(:disabled) {
+            border-color: #60a5fa;
+            background: #eff6ff;
+        }
+        .opt-btn.correct-choice {
+            border-color: #16a34a !important;
+            background: #dcfce7 !important;
+            color: #14532d !important;
+        }
+        .opt-btn.wrong-choice {
+            border-color: #dc2626 !important;
+            background: #fee2e2 !important;
+            color: #7f1d1d !important;
+        }
+        .opt-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #334155;
+            font-weight: 800;
+            font-size: 0.9rem;
+        }
+        .opt-btn.correct-choice .opt-letter {
+            background: #16a34a;
+            color: white;
+        }
+        .opt-btn.wrong-choice .opt-letter {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Answer & Explanation Back Panel */
+        .answer-panel {
+            display: none;
+            background: #f8fafc;
+            border-top: 2px dashed #cbd5e1;
+            margin-top: 8px;
+            padding-top: 18px;
+            animation: fadeIn 0.22s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .note-box {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 0.98rem;
+            color: #78350f;
+        }
+        .note-box strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.92rem;
+        }
+
+        /* Flip Button */
+        .btn-flip {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.08rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+            transition: background 0.2s;
+        }
+        .btn-flip:hover { background: #1d4ed8; }
+
+        /* Anki 4 Rating Buttons */
+        .anki-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .anki-btn {
+            padding: 12px 8px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .anki-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .anki-btn.recommended {
+            outline: 3px solid #0f172a;
+             outline-offset: 2px;
+        }
+        .anki-time {
+            font-size: 0.78rem;
+            font-weight: 700;
+            opacity: 0.85;
+        }
+        .anki-title {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .anki-sub {
+            font-size: 0.74rem;
+            opacity: 0.8;
+        }
+        .btn-again { background: var(--again-bg); color: var(--again); border-color: #fecaca; }
+        .btn-hard { background: var(--hard-bg); color: var(--hard); border-color: #fed7aa; }
+        .btn-good { background: var(--good-bg); color: var(--good); border-color: #bbf7d0; }
+        .btn-easy { background: var(--easy-bg); color: var(--easy); border-color: #bfdbfe; }
+
+        .shortcut-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        /* Deck Browser Modal / Section */
+        .browser-panel {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 22px;
+            margin-top: 18px;
+        }
+        .browser-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+        .browser-table th, .browser-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 8px;
+            text-align: left;
+        }
+        .browser-table th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .browser-row:hover {
+            background: #eff6ff;
+            cursor: pointer;
+        }
+
+        @media (max-width: 640px) {
+            .srs-dashboard { grid-template-columns: repeat(2, 1fr); }
+            .anki-buttons { grid-template-columns: repeat(2, 1fr); }
+            .question-title { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>第三章：氣象（82 題）｜Anki 間隔重複 (SRS) 記憶卡系統</h1>
+    <p>結合 SM-2 間隔重複演算法、互動自測與考點秒記口訣，自動將不熟的考題排入短期高頻複習佇列</p>
+</header>
+
+<div class="container">
+    <!-- SRS Statistics Dashboard -->
+    <div class="srs-dashboard">
+        <div class="stat-card stat-new">
+            <div class="stat-num" id="countNew">82</div>
+            <div class="stat-label">🆕 未學新卡 (New)</div>
+        </div>
+        <div class="stat-card stat-learn">
+            <div class="stat-num" id="countLearning">0</div>
+            <div class="stat-label">🔥 學習/重來中 (Learning)</div>
+        </div>
+        <div class="stat-card stat-review">
+            <div class="stat-num" id="countDue">0</div>
+            <div class="stat-label">⏰ 到期需複習 (Due)</div>
+        </div>
+        <div class="stat-card stat-grad">
+            <div class="stat-num" id="countGrad">0</div>
+            <div class="stat-label">✅ 已熟記精通 (Mastered)</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-wrap" title="熟記精通進度">
+        <div class="progress-fill" id="masteryBar"></div>
+    </div>
+
+    <!-- Filter & Mode Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <label for="catFilter" style="font-weight:700;font-size:0.9rem;">主題篩選：</label>
+            <select id="catFilter" onchange="onFilterChange()">
+                <option value="ALL">全部主題（共 82 題）</option>
+                <option value="空氣密度與密度高度">1. 空氣密度與密度高度（8 題）</option>
+                <option value="大氣壓力與ISA標準大氣">2. 大氣壓力與 ISA 標準大氣（7 題）</option>
+                <option value="風、亂流與低空風切">3. 風、亂流與低空風切（12 題）</option>
+                <option value="濕度與露點溫度">4. 濕度與露點溫度（8 題）</option>
+                <option value="五大霧種與露霜積冰">5. 五大霧種、露霜與積冰（17 題）</option>
+                <option value="雲族分類">6. 雲族高度分類（5 題）</option>
+                <option value="氣團、鋒面與雷雨">7. 氣團、鋒面與雷雨三階段（13 題）</option>
+                <option value="航空氣象與METAR報文">8. 航空氣象與 METAR 報文（12 題）</option>
+            </select>
+
+            <select id="modeSelect" onchange="onFilterChange()">
+                <option value="SRS">🎯 Anki 智能排程（優先複習到期＋新卡）</option>
+                <option value="WEAK">🔥 弱點/錯題特訓（只刷學習中與曾答錯題）</option>
+                <option value="SEQ">📖 依題號順序瀏覽（第 1 題 ～ 第 82 題）</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn-tool" onclick="toggleBrowser()" id="btnBrowser">📋 題庫熟練度總覽</button>
+            <button class="btn-tool" onclick="resetProgress()" style="color:#dc2626;border-color:#fca5a5;">🗑️ 重置進度</button>
+        </div>
+    </div>
+
+    <!-- Main Flashcard View -->
+    <div class="flashcard" id="flashcardView">
+        <div>
+            <div class="card-top-bar">
+                <div class="badge-group">
+                    <span class="badge badge-no" id="cardNo">第 1 題</span>
+                    <span class="badge badge-cat" id="cardCat">空氣密度與密度高度</span>
+                    <span class="badge badge-status-new" id="cardStatus">新卡片</span>
+                </div>
+                <div class="srs-meta" id="cardMeta">難度因子 EF: 2.50 ｜ 連對: 0 ｜ 遺忘: 0</div>
+            </div>
+
+            <div class="question-title" id="cardQuestion">載入中...</div>
+
+            <div class="options-grid" id="cardOptions"></div>
+        </div>
+
+        <div>
+            <button class="btn-flip" id="btnShowAnswer" onclick="revealAnswer()">👀 顯示答案與解析（或直接點擊上方選項作答 / 按空白鍵）</button>
+
+            <div class="answer-panel" id="answerPanel">
+                <div class="note-box">
+                    <strong id="correctBanner">✅ 正確答案：(A)</strong>
+                    <span id="cardNote"></span>
+                </div>
+
+                <div class="anki-buttons">
+                    <button class="anki-btn btn-again" id="btnRate1" onclick="rateCard(1)">
+                        <span class="anki-time" id="time1">&lt; 1 分鐘 (3題後)</span>
+                        <span class="anki-title">1. 重來 (Again)</span>
+                        <span class="anki-sub">忘記 / 答錯</span>
+                    </button>
+                    <button class="anki-btn btn-hard" id="btnRate2" onclick="rateCard(2)">
+                        <span class="anki-time" id="time2">&lt; 6 分鐘 (7題後)</span>
+                        <span class="anki-title">2. 困難 (Hard)</span>
+                        <span class="anki-sub">猶豫 / 靠猜對</span>
+                    </button>
+                    <button class="anki-btn btn-good" id="btnRate3" onclick="rateCard(3)">
+                        <span class="anki-time" id="time3">10 分鐘 / 晉級</span>
+                        <span class="anki-title">3. 良好 (Good)</span>
+                        <span class="anki-sub">正常回想答對</span>
+                    </button>
+                    <button class="anki-btn btn-easy" id="btnRate4" onclick="rateCard(4)">
+                        <span class="anki-time" id="time4">4 天 (直接熟記)</span>
+                        <span class="anki-title">4. 簡單 (Easy)</span>
+                        <span class="anki-sub">秒答 / 完全精通</span>
+                    </button>
+                </div>
+                <div class="shortcut-hint">⌨️ 鍵盤快捷鍵：按 <b>Space</b> 翻面 ｜ 按數字鍵 <b>1</b> (重來)、<b>2</b> (困難)、<b>3</b> (良好)、<b>4</b> (簡單) 評分</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deck Browser Table -->
+    <div class="browser-panel" id="browserPanel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <h3 style="color:var(--primary);">📋 第三章：氣象（82 題）SRS 記憶狀態總覽（點擊任一題可直接抽考）</h3>
+            <button class="btn-tool" onclick="toggleBrowser()">返回記憶卡</button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="browser-table">
+                <thead>
+                    <tr>
+                        <th style="width:65px;">題號</th>
+                        <th style="width:150px;">子主題</th>
+                        <th>題目內容與正解</th>
+                        <th style="width:95px;">狀態</th>
+                        <th style="width:90px;">連對/遺忘</th>
+                    </tr>
+                </thead>
+                <tbody id="browserBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const RAW_CARDS = [{"id": 1, "cat": "空氣密度與密度高度", "q": "當空氣密度增加時,對飛機升力的影響為何者?", "options": ["升力增加。", "升力降低。", "升力不變。", "升力有時增加有時降低。"], "a": "A", "note": "空氣越濃密，機翼與旋翼抓到的空氣分子越多，產生的【升力增加】（阻力也會同時增加）。"}, {"id": 2, "cat": "空氣密度與密度高度", "q": "下列何者非影響空氣密度之因素?", "options": ["高度。", "溫度。", "濕度。", "應力。"], "a": "D", "note": "影響空氣密度三大因素：【高度、溫度、濕度】。機械力學的「應力」與空氣密度無關！"}, {"id": 3, "cat": "空氣密度與密度高度", "q": "當空氣中分子較少且稀薄,表示其密度高度為何?", "options": ["越高。", "越低。", "可能高也可能低。", "無法判斷。"], "a": "A", "note": "⚡反向觀念：把「密度高度」當作「體感海拔高度」。空氣分子少且稀薄＝像在高山上＝密度高度【越高】。"}, {"id": 4, "cat": "空氣密度與密度高度", "q": "當空氣中分子較多且濃厚,表示其密度高度為何?", "options": ["越高。", "越低。", "可能高也可能低。", "無法判斷。"], "a": "B", "note": "⚡反向觀念：空氣分子多且濃厚＝像在低海拔平地＝密度高度【越低】（升力好、性能佳）。"}, {"id": 5, "cat": "空氣密度與密度高度", "q": "高密度高度之環境比較不會出現於下列何處?", "options": ["低海拔處。", "高溫處。", "非常潮濕之處。", "低大氣壓力之處。"], "a": "A", "note": "高密度高度（空氣稀薄，像高山）常出現在高海拔、高溫、潮濕、低氣壓；比較【不會】出現在低海拔處。"}, {"id": 6, "cat": "空氣密度與密度高度", "q": "低密度高度之環境比較不會出現於下列何處?", "options": ["大氣壓力極高之處。", "低海拔處。", "乾燥處。", "高溫處。"], "a": "D", "note": "低密度高度（空氣濃厚，像平地）常出現在高氣壓、低海拔、乾燥、低溫；比較【不會】出現在高溫處。"}, {"id": 7, "cat": "空氣密度與密度高度", "q": "空氣可藉由外界的作功達到下列哪種效果?", "options": ["加工成形。", "染色。", "壓縮及膨脹。", "以上皆是。"], "a": "C", "note": "空氣是可壓縮流體，可藉由外界作功達到【壓縮及膨脹】。"}, {"id": 8, "cat": "空氣密度與密度高度", "q": "於固定空氣體積下,升溫時該體積空氣密度減少,降溫時該體積空氣密度為下列何種變化?", "options": ["增加。", "減少。", "不變。", "有時增加有時減少。"], "a": "A", "note": "固定體積下熱脹冷縮：升溫時密度減少，降溫時空氣分子收縮聚集，密度【增加】。"}, {"id": 9, "cat": "大氣壓力與ISA標準大氣", "q": "對流層裡,溫度及壓力均隨高度增加而有下列何種變化?", "options": ["降低。", "增加。", "不變。", "有時增加有時降低。"], "a": "A", "note": "在對流層中，海拔高度越高，溫度與大氣壓力均隨高度增加而【降低】。"}, {"id": 10, "cat": "大氣壓力與ISA標準大氣", "q": "下列有關大氣壓力量測之敘述,何者錯誤?", "options": ["國際標準大氣(International Standard Atmosphere,ISA)為各國公認之參考校正基準。", "海平面大氣壓力為29.92英吋汞柱(inHg)。", "一標準大氣壓力等於1017.2毫巴值。", "每上升1,000英呎,氣壓值減少約1英吋汞柱。"], "a": "C", "note": "⚠️數字陷阱：1 標準大氣壓 ＝ 29.92 inHg ＝【1013.2 毫巴 (mb/hPa)】，選項 C 寫 1017.2 是錯的！"}, {"id": 11, "cat": "大氣壓力與ISA標準大氣", "q": "標準一大氣壓的29.92吋汞柱換算成毫巴值為下列哪個數值?", "options": ["10.132。", "101.32。", "1013.2。", "10132。"], "a": "C", "note": "必背數字：29.92 吋汞柱 (inHg) ＝【1013.2】毫巴 (mb/hPa)。小數點在 3 後面！"}, {"id": 12, "cat": "大氣壓力與ISA標準大氣", "q": "大氣壓力之實際值與標準值存在差距,係由於哪項因素所影響?", "options": ["壓力錶廠牌差異。", "地面溫度不平均。", "壓力錶讀法差異。", "壓力錶校正值差異。"], "a": "B", "note": "各地【地面溫度不平均】會造成空氣受熱不均與氣壓變化，使大氣壓力實際值與標準值產生差距。"}, {"id": 13, "cat": "大氣壓力與ISA標準大氣", "q": "若遙控無人機操作人未能注意大氣壓力實際值與標準值間之差距並適時修正,可能無法精確掌握何項資訊?", "options": ["實際高度。", "實際航向。", "實際滾轉角。", "實際引擎轉速。"], "a": "A", "note": "氣壓計是用來推算高度的！若未修正氣壓差距，將無法精確掌握無人機的【實際高度】。"}, {"id": 14, "cat": "大氣壓力與ISA標準大氣", "q": "氣象資料顯示某區域之氣壓值有向上提升之趨勢,代表該區域天氣狀況有何種變化?", "options": ["天氣轉壞。", "天氣可能轉好也可能轉壞。", "天氣好轉。", "以上皆非。"], "a": "C", "note": "高氣壓代表下沉氣流穩定：氣壓值向上提升＝【天氣好轉】。"}, {"id": 15, "cat": "大氣壓力與ISA標準大氣", "q": "氣象資料顯示某區域之氣壓值有向下降低之趨勢,代表該區域天氣狀況有何種變化?", "options": ["天氣好轉。", "天氣轉壞。", "天氣有時晴朗有時轉壞。", "以上皆非。"], "a": "B", "note": "低氣壓代表上升氣流不穩定：氣壓值向下降低＝【天氣轉壞】。"}, {"id": 16, "cat": "風、亂流與低空風切", "q": "空氣的水平運動稱為?", "options": ["「雲」。", "「風」。", "「霧」。", "「霾」。"], "a": "B", "note": "定義秒記：空氣的「水平運動」稱為【風】（垂直運動則是對流/氣流）。"}, {"id": 17, "cat": "風、亂流與低空風切", "q": "有關風速的單位下列何者為非?", "options": ["公尺/每秒 (m/s)。", "公里/每小時 (km/h)。", "海浬/每小時(kts)。", "公斤/每小時(kg)。"], "a": "D", "note": "風速單位是「距離/時間」（m/s、km/h、kts 海浬/小時）。「公斤 (kg)」是重量單位，不是風速！"}, {"id": 18, "cat": "風、亂流與低空風切", "q": "遙控無人機通常應於下列哪種風向下起降?", "options": ["順風。", "側風。", "逆風。", "任何風向。"], "a": "C", "note": "航空鐵則：起降一律優先選擇【逆風】（頂風），可獲得較大相對空速與升力、縮短起降距離。"}, {"id": 19, "cat": "風、亂流與低空風切", "q": "遙控無人飛機於逆風下起飛,不會有以下哪種特性?", "options": ["增加穩定性。", "增加操縱性。", "減少起飛距離。", "減少操縱性。"], "a": "D", "note": "逆風起飛好處多：增加穩定性、增加操縱性、減少起飛距離；絕對不會「減少操縱性」。"}, {"id": 20, "cat": "風、亂流與低空風切", "q": "遙控無人機飛經下列哪個區域較易遭受亂流影響,且其亂流強度與周遭環境有密切關聯?", "options": ["大草原區。", "寬廣湖泊區。", "平坦操場上空。", "深山峽谷區。"], "a": "D", "note": "地形起伏劇烈的【深山峽谷區】最容易產生機械亂流與地形亂流。"}, {"id": 21, "cat": "風、亂流與低空風切", "q": "當越強勁的風吹過多山地區時,背風面的風場會如何變化?", "options": ["漸趨平穩。", "有時平穩有時不平穩。", "漸趨不平穩。", "不變。"], "a": "C", "note": "山區強風口訣：「迎風平順、背風亂」。強風吹過山巔後，【背風面】會形成渦流而漸趨不平穩。"}, {"id": 22, "cat": "風、亂流與低空風切", "q": "遙控無人機飛航活動期間,可能於任何高度遭遇不同風切狀況,其中以哪一項對其操控性影響最大?", "options": ["超高空風切。", "高空風切。", "向量風切。", "低空風切。"], "a": "D", "note": "因為離地面近、沒有高度緩衝空間，所有風切中以【低空風切】對無人機操控性與安全影響最大！"}, {"id": 23, "cat": "風、亂流與低空風切", "q": "遙控無人機於起降階段突遇風速與風向之明顯改變,不會有下列哪種影響?", "options": ["飛行姿態改變。", "飛行軌跡改變。", "所獲升力改變。", "最大載重改變。"], "a": "D", "note": "風切會改變姿態、軌跡與升力；但無人機的「最大載重」是硬體設計規格，不會因為一陣風吹來就改變。"}, {"id": 24, "cat": "風、亂流與低空風切", "q": "下列針對發生於臺灣地區低空風切之敘述,何者較為正確?", "options": ["於鋒面過境時較為溫和,西南季風吹拂時較為強烈。", "於鋒面過境時較為強烈,西南季風吹拂時較為溫和。", "鋒面過境或西南季風吹拂時均為溫和。", "鋒面過境或西南季風吹拂時均為強烈。"], "a": "B", "note": "⚡必考對比：臺灣低空風切於【鋒面過境時較為強烈】（冷暖交界風向驟變），【西南季風吹拂時較為溫和】（單一暖濕氣流）。"}, {"id": 25, "cat": "風、亂流與低空風切", "q": "遙控無人機操作人於操作前及操作時需隨時注意天氣狀況,因天氣因素可能對無人機產生何種影響?", "options": ["外觀美感。", "飛行航向。", "品牌知名度。", "重量大小。"], "a": "B", "note": "風向與天氣變化會直接推偏無人機的【飛行航向】。"}, {"id": 26, "cat": "五大霧種與露霜積冰", "q": "下列何種天氣現象,與大氣垂直運動無直接關係?", "options": ["雷雨。", "平流霧。", "冰雹。", "下爆氣流。"], "a": "B", "note": "⚡必考排除題：雷雨、冰雹、下爆氣流都是劇烈垂直對流；唯有【平流霧】是暖濕空氣「水平」流經冷地表，與垂直運動無直接關係。"}, {"id": 27, "cat": "氣團、鋒面與雷雨", "q": "大氣穩定度與下列何項因子有直接關係?", "options": ["空氣流動方向。", "空氣中懸浮微粒大小。", "水氣飽和程度。", "空氣乾燥程度。"], "a": "A", "note": "大氣穩定度直接取決於【空氣流動方向】（垂直上升不穩定、下沉穩定）。"}, {"id": 28, "cat": "氣團、鋒面與雷雨", "q": "於地球表面某特殊地區所生成,具停留時間長且其水平方向之物理性質(如溫度及濕度)等均為一致之廣大空氣體,稱之?", "options": ["鋒面。", "氣團。", "颶風。", "塔狀積雲。"], "a": "B", "note": "停留在廣大區域、水平方向溫度與濕度均勻一致的廣大空氣體，稱為【氣團】。"}, {"id": 29, "cat": "氣團、鋒面與雷雨", "q": "下列哪個城市所處位置之氣候條件,較易發生午後雷陣雨?", "options": ["東京。", "新加坡。", "莫斯科。", "倫敦。"], "a": "B", "note": "午後雷陣雨最常發生在赤道/熱帶高溫潮濕地區，四個選項中【新加坡】位於赤道附近最易發生。"}, {"id": 30, "cat": "濕度與露點溫度", "q": "一定量空氣於一定溫度下,所能容納之下列何者亦有其限度?", "options": ["PM2.5", "微生物。", "水氣量。", "細菌。"], "a": "C", "note": "一定量空氣在特定溫度下能容納的【水氣量】是有上限（飽和限度）的。"}, {"id": 31, "cat": "濕度與露點溫度", "q": "當空氣中水氣含量已達其最高限度時,此時相對溼度為何?", "options": ["0.2", "0.4。", "0.8。", "1。"], "a": "D", "note": "當水氣含量達到最高限度（100% 飽和）時，相對濕度數值為【1】（即 100%）。"}, {"id": 32, "cat": "濕度與露點溫度", "q": "空氣能容納水氣量之多寡與下列何者有密切關係?", "options": ["空氣含氧量。", "空氣雜質含量。", "溫度。", "空氣惰性氣體成份。"], "a": "C", "note": "空氣能容納水氣量的多寡與【溫度】密切相關（溫度越高，能容納的水氣上限越多）。"}, {"id": 33, "cat": "濕度與露點溫度", "q": "已飽和之水氣如遇溫度持續下降,不會產生下列哪種現象?", "options": ["霧。", "雲。", "雨滴。", "風。"], "a": "D", "note": "飽和水氣降溫凝結會變成雲、霧、雨滴；但【風】是氣壓差造成的空氣水平運動，不是水氣凝結產生的。"}, {"id": 34, "cat": "濕度與露點溫度", "q": "空氣中實際所含水氣量,與相同溫度下可含最大水氣量之百分比,稱為?", "options": ["絕對濕度。", "相對濕度。", "同溫濕度。", "實際濕度。"], "a": "B", "note": "實際水氣量 ÷ 同溫下最大水氣量之百分比，定義為【相對濕度】。"}, {"id": 35, "cat": "濕度與露點溫度", "q": "空氣中濕度越高,會導致下列哪種情形?", "options": ["空氣的壓力越大。", "空氣密度越低。", "飛行器升力增加。", "涼爽度提高。"], "a": "B", "note": "⚡重要物理觀念：水分子 (H2O 分子量18) 比乾燥空氣 (平均分子量29) 輕！所以濕度越高，水氣取代乾空氣，會導致【空氣密度越低】、升力下降。"}, {"id": 36, "cat": "濕度與露點溫度", "q": "當空氣溫度等於露點溫度時,即達到何種狀況?", "options": ["水氣沸點。", "水氣飽和點。", "水氣熔點。", "水氣蒸發點。"], "a": "B", "note": "當氣溫下降到等於「露點溫度」時，空氣中的水氣就達到 100%【水氣飽和點】。"}, {"id": 37, "cat": "濕度與露點溫度", "q": "水汽飽和時不會產生下列哪種現象?", "options": ["雲。", "霧。", "雨。", "雷爆。"], "a": "D", "note": "水氣飽和會凝結成雲、霧、雨；但【雷爆】還需要劇烈的不穩定上升氣流與電荷分離，單靠水氣飽和不會產生雷爆。"}, {"id": 38, "cat": "五大霧種與露霜積冰", "q": "「霧」依其形成條件及特性分有不同種類,下列何者非常用之分類?", "options": ["平流霧。", "蒸氣霧。", "鋒面霧。", "高空霧。"], "a": "D", "note": "霧是貼近地表的凝結現象（高空凝結叫做雲），因此【高空霧】不是霧的常用分類！"}, {"id": 39, "cat": "五大霧種與露霜積冰", "q": "有關平流霧之特點,下列何者為非?", "options": ["日出後消散快速。", "相對濕度較高。", "不容易消散。", "可能發生於沿海區域。"], "a": "A", "note": "⚡平流霧 vs 輻射霧：平流霧濃厚、範圍大且【不容易消散】（需靠風向轉變）；「日出後消散快速」是輻射霧的特點，故 (A) 錯誤。"}, {"id": 40, "cat": "五大霧種與露霜積冰", "q": "下列哪一種情況能有助於平流霧之消散?", "options": ["風速變小。", "風向轉變。", "溫度升高。", "濕度增高。"], "a": "B", "note": "平流霧是暖濕空氣持續吹過冷地表造成的，只有當【風向轉變】（不再輸送暖濕空氣）時才有助於消散。"}, {"id": 41, "cat": "五大霧種與露霜積冰", "q": "有關輻射霧之特點,下列何者為非?", "options": ["日出後漸漸消散。", "大都發生於冬季。", "相較於平流霧比較不容易消散。", "通常地面風速微弱、空氣穩定。"], "a": "C", "note": "輻射霧是冬季晴朗無風夜晚地面輻射冷卻造成，太陽出來地表回溫就會漸漸消散，相較於平流霧【比較容易消散】，故 (C) 錯誤。"}, {"id": 42, "cat": "五大霧種與露霜積冰", "q": "冷空氣因流經溫暖水面之蒸發作用使其中水氣增加,因而凝結成下列哪種霧的型態?", "options": ["蒸氣霧。", "輻射霧。", "山坡霧。", "鋒面霧。"], "a": "A", "note": "口訣：「冷風吹過暖水面＝蒸氣霧」（像冬天泡溫泉水面冒蒸氣），因水面蒸發補充水氣而凝結。"}, {"id": 43, "cat": "五大霧種與露霜積冰", "q": "蒸氣霧常出現於下列哪個季節?", "options": ["春夏季節。", "夏末季節。", "秋冬季節。", "春末季節。"], "a": "C", "note": "蒸氣霧需要「冷空氣＋溫暖水面」，最常出現在水溫尚暖但冷空氣南下的【秋冬季節】。"}, {"id": 44, "cat": "五大霧種與露霜積冰", "q": "於兩股不同性質氣團之交界面,當空氣自高空往下移動自近地面較冷空氣而凝結所成之霧,稱之?", "options": ["鋒面霧。", "山坡霧。", "輻射霧。", "蒸氣霧。"], "a": "A", "note": "題目關鍵字看到「兩股不同性質氣團之交界面」，交界面就是鋒面，故稱為【鋒面霧】。"}, {"id": 45, "cat": "五大霧種與露霜積冰", "q": "鋒面霧多伴隨何種天氣現象發生?", "options": ["颱風。", "鋒面。", "雷陣雨。", "龍捲風。"], "a": "B", "note": "鋒面霧顧名思義多伴隨【鋒面】天氣現象發生。"}, {"id": 46, "cat": "五大霧種與露霜積冰", "q": "平流和輻射兩種物理過程亦可相輔相成,造成下列哪種霧的發生?", "options": ["平流輻射霧。", "山坡霧。", "蒸氣霧。", "鋒面霧。"], "a": "A", "note": "題目直接寫出「平流和輻射兩種物理過程相輔相成」，答案直接對應【平流輻射霧】。"}, {"id": 47, "cat": "五大霧種與露霜積冰", "q": "當周遭空氣溫度下降至低於露點,水氣因此凝結成水滴並附著於地表或建築物上,其稱之?", "options": ["雲。", "露。", "霧。", "霜。"], "a": "B", "note": "低於露點凝結成液態「水滴」附著於地表或建築物上，稱為【露】（若在 0°C 以下結成固態冰晶則稱為霜）。"}, {"id": 48, "cat": "五大霧種與露霜積冰", "q": "附著於航空器上之露珠若凝結成固態霜,對飛航安全有何影響?", "options": ["對飛安有幫助。", "對飛安可能造成危害。", "對飛安並無影響。", "對飛安有時可能造成危害有時無影響。"], "a": "B", "note": "機體或機翼表面結【霜】會破壞氣動外型平滑度，對飛航安全【可能造成危害】。"}, {"id": 49, "cat": "五大霧種與露霜積冰", "q": "附著於機體表面的霜在飛行時不會產生下列哪種情形?", "options": ["擾動流經機翼之空氣。", "降低升力。", "增加阻力。", "增加飛航效率。"], "a": "D", "note": "機翼表面的霜會使表面變粗糙，擾動氣流、降低升力、增加摩擦阻力；絕對不會「增加飛航效率」！"}, {"id": 50, "cat": "五大霧種與露霜積冰", "q": "於大陸型氣候區域執行深秋早晨之飛行任務前,務必進行下列哪個程序以確保安全?", "options": ["暖身程序。", "點名程序。", "除霜程序。", "冥想程序。"], "a": "C", "note": "大陸型氣候深秋早晨易結霜，起飛前務必執行【除霜程序】恢復機翼平滑表面。"}, {"id": 51, "cat": "雲族分類", "q": "雲有下列哪幾種型態?", "options": ["積狀雲。", "層狀雲。", "卷狀雲。", "以上皆是。"], "a": "D", "note": "雲的三大基本外觀型態：【積狀雲、層狀雲、卷狀雲】（選以上皆是）。"}, {"id": 52, "cat": "雲族分類", "q": "雲的型態依據雲所在的高度可以分成下列哪幾種?", "options": ["高雲族。", "中雲族。", "低雲族。", "以上皆是。"], "a": "D", "note": "雲依所在高度分為三族：【高雲族、中雲族、低雲族】（選以上皆是）。"}, {"id": 53, "cat": "雲族分類", "q": "高雲族高度大約在6,000公尺以上,主要有下列哪幾種?", "options": ["卷雲。", "卷層雲。", "卷積雲。", "以上皆是。"], "a": "D", "note": "口訣：高雲族（6,000公尺以上）全部都有「卷」字：【卷雲、卷層雲、卷積雲】。"}, {"id": 54, "cat": "雲族分類", "q": "中雲族高度大約在2,000~6,000公尺,主要有下列哪幾種?", "options": ["高積雲。", "高層雲。", "雨層雲。", "以上皆是。"], "a": "D", "note": "口訣：中雲族（2,000～6,000公尺）有「高」字輩＋雨層雲：【高積雲、高層雲、雨層雲】。"}, {"id": 55, "cat": "雲族分類", "q": "低雲族高度位於2,000公尺以下,包含下列哪幾種?", "options": ["積雲。", "層雲。", "層積雲。", "以上皆是。"], "a": "D", "note": "口訣：低雲族（2,000公尺以下）為基本款：【積雲、層雲、層積雲】。"}, {"id": 56, "cat": "氣團、鋒面與雷雨", "q": "下列何者為常見氣團分類方式?", "options": ["依其源地緯度高或低。", "依其源地為大陸或海洋。", "依其所經地面為冷空氣或暖空氣。", "以上皆是。"], "a": "D", "note": "氣團分類依據：源地緯度（高/低）、源地表面（大陸/海洋）、所經地面冷暖（選以上皆是）。"}, {"id": 57, "cat": "氣團、鋒面與雷雨", "q": "氣團本身冷於周遭空氣稱為?", "options": ["暖氣團。", "冷氣團。", "冰氣團。", "熱氣團。"], "a": "B", "note": "氣團本身溫度比周遭空氣冷，即稱為【冷氣團】。"}, {"id": 58, "cat": "氣團、鋒面與雷雨", "q": "氣團穩定度決定其籠罩區域的哪種形態?", "options": ["社會形態。", "經濟形態。", "天氣形態。", "政治形態。"], "a": "C", "note": "氣團穩定度決定其籠罩區域的【天氣形態】（穩定氣團多層狀雲與陣風小，不穩定氣團多積狀雲與雷陣雨）。"}, {"id": 59, "cat": "氣團、鋒面與雷雨", "q": "在鋒面兩側的下列哪種現象通常均有明顯的差異?", "options": ["溫度。", "濕度。", "風、天氣。", "以上皆是。"], "a": "D", "note": "鋒面是冷暖氣團交界，兩側的【溫度、濕度、風、天氣】均有明顯差異（選以上皆是）。"}, {"id": 60, "cat": "氣團、鋒面與雷雨", "q": "當冷空氣前進,迫使暖空氣後退而取代暖空氣原有位置,則此時產生之鋒面稱為?", "options": ["滯留鋒。", "暖鋒。", "冷鋒。", "囚錮鋒。"], "a": "C", "note": "誰主動推進就叫什麼鋒：【冷空氣前進】迫使暖空氣後退，稱為【冷鋒】。"}, {"id": 61, "cat": "氣團、鋒面與雷雨", "q": "當冷暖氣團勢均力敵以致使鋒面呈滯留狀態,此時之鋒面稱為?", "options": ["暖鋒。", "滯留鋒。", "冷鋒。", "囚錮鋒。"], "a": "B", "note": "冷暖氣團【勢均力敵】停留原地拉鋸，稱為【滯留鋒】（如臺灣梅雨鋒面）。"}, {"id": 62, "cat": "氣團、鋒面與雷雨", "q": "遙控無人機飛經各鋒面區時,可能遭遇下列何項劇烈變化?", "options": ["溫度。", "濕度。", "風向。", "以上皆是。"], "a": "D", "note": "飛經鋒面區會同時遭遇【溫度、濕度、風向】等劇烈變化（選以上皆是）。"}, {"id": 63, "cat": "風、亂流與低空風切", "q": "遙控無人機於山區飛行時若遇強風,則可選擇何處飛行相較為平順?", "options": ["背風面。", "側風面。", "迎風面。", "以上皆非。"], "a": "C", "note": "山區強風口訣：「迎風平順、背風亂」。選擇【迎風面】飛行氣流較為平順。"}, {"id": 64, "cat": "風、亂流與低空風切", "q": "遙控無人機於山區飛行時,過了山巔需注意沿何方向所產生之亂流?", "options": ["側風面。", "背風面。", "迎風面。", "以上皆非。"], "a": "B", "note": "過了山巔後，在山體【背風面】會產生滾軸渦流與強烈下沉亂流，極度危險！"}, {"id": 65, "cat": "五大霧種與露霜積冰", "q": "遙控無人機飛越可見水氣(如雨或雲)時,需注意哪個部位可能發生積冰現象?", "options": ["機翼翼面。", "尾翼翼面。", "感測器。", "以上皆是。"], "a": "D", "note": "飛越可見水氣（雨或雲）且達冰點時，【機翼翼面、尾翼翼面、感測器】皆可能發生積冰（選以上皆是）。"}, {"id": 66, "cat": "五大霧種與露霜積冰", "q": "遙控無人機飛行時,於下列哪種情形可能發生積冰現象?", "options": ["機體周遭氣溫為攝氏零度。", "機體周遭氣溫為攝氏零度以下。", "有可見水氣。", "以上皆是。"], "a": "D", "note": "積冰發生條件：氣溫【0°C 或 0°C 以下】＋【有可見水氣】（選以上皆是）。"}, {"id": 67, "cat": "五大霧種與露霜積冰", "q": "當遙控無人機飛越結冰區域時,可能發生下列哪種狀況?", "options": ["影響或誤判遙控無人機飛行性能表現。", "提升遙控無人機飛行性能表現。", "遙控無人機飛行性能表現可能變好或變壞。", "不太可能發生任何狀況。"], "a": "A", "note": "感測器（如空速管）與翼面結冰，會【影響或誤判遙控無人機飛行性能表現】。"}, {"id": 68, "cat": "氣團、鋒面與雷雨", "q": "雷雨的發展循環不包含下列何者?", "options": ["發展期。", "成熟期。", "重疊期。", "消散期。"], "a": "C", "note": "雷雨生命周期三階段：【發展期 → 成熟期 → 消散期】，沒有「重疊期」！"}, {"id": 69, "cat": "氣團、鋒面與雷雨", "q": "雷雨成熟期具有的特徵為何?", "options": ["下沉氣流。", "開始降水。", "打雷。", "以上皆是。"], "a": "D", "note": "雷雨【成熟期】最劇烈，三大特徵：開始降水、強烈下沉氣流、打雷（選以上皆是）。"}, {"id": 70, "cat": "氣團、鋒面與雷雨", "q": "雷雨消散期具有的特徵為何?", "options": ["降雨減緩。", "下沉氣流減緩。", "雷雨雹消散。", "以上皆是。"], "a": "D", "note": "雷雨【消散期】特徵：降雨減緩、下沉氣流減緩、雷雨胞消散（選以上皆是）。"}, {"id": 71, "cat": "航空氣象與METAR報文", "q": "臺北航空氣象中心隸屬於下列哪個機關?", "options": ["交通部觀光局飛航服務總臺。", "交通部民用航空局飛航服務總臺。", "交通部中央氣象局飛航服務總臺。", "交通部航政司飛航服務總臺。"], "a": "B", "note": "臺北航空氣象中心隸屬於【交通部民用航空局飛航服務總臺】（注意是民航局，不是觀光局或氣象局）。"}, {"id": 72, "cat": "航空氣象與METAR報文", "q": "遙控無人機操作人可透過中央氣象局網頁取得下列哪項資料?", "options": ["天氣觀測資料。", "天氣預報資料。", "衛星雲圖。", "以上皆是。"], "a": "D", "note": "中央氣象署（局）網頁可取得：天氣觀測、天氣預報、衛星雲圖（選以上皆是）。"}, {"id": 73, "cat": "航空氣象與METAR報文", "q": "遙控無人機操作人可透過飛航服務總臺所建置之航空氣象服務網(AOAWS)取得下列哪項資料?", "options": ["國內外主要機場之即時觀測資料。", "國內機場6小時天氣預報資料。", "太平洋地區衛星雲圖。", "高空風溫圖。"], "a": "A", "note": "⚠️陷阱題：飛航服務總臺之航空氣象服務網 (AOAWS) 題庫唯一標準答案為 (A)【國內外主要機場之即時觀測資料】！"}, {"id": 74, "cat": "航空氣象與METAR報文", "q": "考量天氣條件對於遙控無人機操控行為之影響,遙控無人機操作人應具備下列何者之基礎判讀能力?", "options": ["航空氣象報文。", "國內城市氣象報文。", "外國城市氣象報文。", "觀光地區氣象報文。"], "a": "A", "note": "操作人應具備【航空氣象報文】（如 METAR、TAF）之基礎判讀能力。"}, {"id": 75, "cat": "航空氣象與METAR報文", "q": "航空例行天氣報告中,所使用觀測日期與時間及其代碼說明為下列何者?", "options": ["Z字母指示碼;代表UTC時間。", "L字母指示碼;代表本地時間。", "T字母指示碼;代表UTC時間。", "X字母指示碼;代表本地時間。"], "a": "A", "note": "METAR 報文時間末端的【Z 字母指示碼】代表【UTC 時間】（世界協調時間，Zulu Time）。"}, {"id": 76, "cat": "航空氣象與METAR報文", "q": "航空例行天氣報告中,所觀測盛行能見度值,其編報方式及單位為何?", "options": ["4碼(公尺)。", "6碼(公尺)。", "8碼(公尺)。", "10碼(公尺)。"], "a": "A", "note": "METAR 盛行能見度編報為【4 碼】，單位為【公尺 (m)】（例如 9999 代表能見度 10 公里以上）。"}, {"id": 77, "cat": "航空氣象與METAR報文", "q": "航空氣象觀測員將天空劃分成8等份,若觀測到1/8至2/8的天空被雲層遮蓋,該雲量類別稱為下列何者?", "options": ["稀雲。", "疏雲。", "裂雲。", "密雲。"], "a": "A", "note": "八分法雲量口訣（1-2稀、3-4疏、5-7裂、8密）：1/8～2/8 為【稀雲 (FEW)】。"}, {"id": 78, "cat": "航空氣象與METAR報文", "q": "航空氣象觀測員將天空劃分成8等份,若觀測到3/8至4/8的天空被雲層遮蓋,該雲量類別稱為下列何者?", "options": ["稀雲。", "疏雲。", "裂雲。", "密雲。"], "a": "B", "note": "八分法雲量口訣（1-2稀、3-4疏、5-7裂、8密）：3/8～4/8 為【疏雲 (SCT)】。"}, {"id": 79, "cat": "航空氣象與METAR報文", "q": "航空氣象觀測員將天空劃分成8等份,若觀測到5/8至7/8的天空被雲層遮蓋,該雲量類別稱為下列何者?", "options": ["稀雲。", "疏雲。", "裂雲。", "密雲。"], "a": "C", "note": "八分法雲量口訣（1-2稀、3-4疏、5-7裂、8密）：5/8～7/8 為【裂雲 (BKN)】。"}, {"id": 80, "cat": "航空氣象與METAR報文", "q": "航空氣象觀測員將天空劃分成8等份,若觀測到8/8的天空被雲層遮蓋,該雲量類別稱為下列何者?", "options": ["稀雲。", "疏雲。", "裂雲。", "密雲。"], "a": "D", "note": "八分法雲量口訣（1-2稀、3-4疏、5-7裂、8密）：8/8 全滿遮蓋為【密雲 (OVC)】。"}, {"id": 81, "cat": "航空氣象與METAR報文", "q": "航空例行天氣報告中,雲層之雲底高度單位為下列哪一個?", "options": ["公尺。", "公里。", "呎。", "浬。"], "a": "C", "note": "⚠️單位陷阱：METAR 報文中，能見度用「公尺」，但雲層之雲底高度單位是【呎 (ft)】！"}, {"id": 82, "cat": "航空氣象與METAR報文", "q": "終端機場天氣觀測報中,盛行天氣現象包括下列哪個項目?", "options": ["風向風速。", "能見度。", "天氣狀況及雲組。", "以上皆是。"], "a": "D", "note": "終端機場天氣觀測報（METAR）盛行天氣現象包含：風向風速、能見度、天氣狀況及雲組（選以上皆是）。"}];
+    const STORAGE_KEY = 'caa_drone_ch3_anki_srs_v1';
+
+    let srsState = {};
+    let sessionStep = 0; // virtual step counter for intra-session micro-intervals
+    let currentCard = null;
+    let isRevealed = false;
+    let seqIndex = 0;
+
+    function initSRS() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { srsState = JSON.parse(saved); } catch (e) { srsState = {}; }
+        }
+        RAW_CARDS.forEach(c => {
+            if (!srsState[c.id]) {
+                srsState[c.id] = {
+                    status: 'new',      // 'new' | 'learning' | 'graduated'
+                    reps: 0,
+                    lapses: 0,
+                    ease: 2.5,
+                    intervalDays: 0,
+                    dueStep: 0,         // intra-session step due
+                    dueTime: 0          // timestamp due
+                };
+            }
+        });
+        saveSRS();
+    }
+
+    function saveSRS() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(srsState));
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        const now = Date.now();
+        let nNew = 0, nLearn = 0, nDue = 0, nGrad = 0;
+
+        RAW_CARDS.forEach(c => {
+            const st = srsState[c.id];
+            if (st.status === 'new') {
+                nNew++;
+            } else if (st.status === 'learning') {
+                nLearn++;
+            } else if (st.status === 'graduated') {
+                nGrad++;
+                if (st.dueTime <= now || st.dueStep <= sessionStep) {
+                    nDue++;
+                }
+            }
+        });
+
+        document.getElementById('countNew').textContent = nNew;
+        document.getElementById('countLearning').textContent = nLearn;
+        document.getElementById('countDue').textContent = nDue;
+        document.getElementById('countGrad').textContent = nGrad;
+
+        const pct = Math.round((nGrad / RAW_CARDS.length) * 100);
+        document.getElementById('masteryBar').style.width = pct + '%';
+    }
+
+    function getFilteredPool() {
+        const cat = document.getElementById('catFilter').value;
+        return cat === 'ALL' ? RAW_CARDS : RAW_CARDS.filter(c => c.cat === cat);
+    }
+
+    function pickNextCard() {
+        const pool = getFilteredPool();
+        const mode = document.getElementById('modeSelect').value;
+        const now = Date.now();
+
+        if (mode === 'SEQ') {
+            if (seqIndex >= pool.length) seqIndex = 0;
+            return pool[seqIndex];
+        }
+
+        if (mode === 'WEAK') {
+            const weakCards = pool.filter(c => {
+                const st = srsState[c.id];
+                return st.status === 'learning' || st.lapses > 0 || st.ease < 2.4;
+            });
+            if (weakCards.length === 0) {
+                alert('目前此分類下沒有「學習中或曾答錯」的弱點卡片！系統將自動切換回 Anki 智能排程模式。');
+                document.getElementById('modeSelect').value = 'SRS';
+            } else {
+                weakCards.sort((a, b) => (srsState[a.id].dueStep - srsState[b.id].dueStep) || (srsState[b.id].lapses - srsState[a.id].lapses));
+                if (weakCards.length > 1 && currentCard && weakCards[0].id === currentCard.id) {
+                    return weakCards[1];
+                }
+                return weakCards[0];
+            }
+        }
+
+        // Default: Anki SRS Smart Scheduling
+        // Priority 1: Learning cards whose dueStep <= sessionStep
+        const dueLearning = pool.filter(c => srsState[c.id].status === 'learning' && srsState[c.id].dueStep <= sessionStep);
+        if (dueLearning.length > 0) {
+            dueLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            return dueLearning[0];
+        }
+
+        // Priority 2: Graduated review cards that are due
+        const dueReview = pool.filter(c => srsState[c.id].status === 'graduated' && srsState[c.id].dueTime <= now);
+        if (dueReview.length > 0) {
+            dueReview.sort((a, b) => srsState[a.id].dueTime - srsState[b.id].dueTime);
+            return dueReview[0];
+        }
+
+        // Priority 3: New cards
+        const newCards = pool.filter(c => srsState[c.id].status === 'new');
+        if (newCards.length > 0) {
+            return newCards[0];
+        }
+
+        // Priority 4: Any remaining learning cards (even if dueStep > sessionStep)
+        const anyLearning = pool.filter(c => srsState[c.id].status === 'learning');
+        if (anyLearning.length > 0) {
+            anyLearning.sort((a, b) => srsState[a.id].dueStep - srsState[b.id].dueStep);
+            if (anyLearning.length > 1 && currentCard && anyLearning[0].id === currentCard.id) {
+                return anyLearning[1];
+            }
+            return anyLearning[0];
+        }
+
+        // Priority 5: All graduated! Pick least recently reviewed or lowest ease
+        const sortedGrad = [...pool].sort((a, b) => srsState[a.id].ease - srsState[b.id].ease);
+        if (sortedGrad.length > 1 && currentCard && sortedGrad[0].id === currentCard.id) {
+            return sortedGrad[1];
+        }
+        return sortedGrad[0];
+    }
+
+    function renderCard(card) {
+        currentCard = card;
+        isRevealed = false;
+        const st = srsState[card.id];
+
+        document.getElementById('cardNo').textContent = `第三章 第 ${card.id} 題`;
+        document.getElementById('cardCat').textContent = card.cat;
+
+        const statusEl = document.getElementById('cardStatus');
+        if (st.status === 'new') {
+            statusEl.textContent = '🆕 新卡片';
+            statusEl.className = 'badge badge-status-new';
+        } else if (st.status === 'learning') {
+            statusEl.textContent = '🔥 學習/重來中';
+            statusEl.className = 'badge badge-status-learning';
+        } else {
+            statusEl.textContent = `✅ 已熟記（間隔 ${st.intervalDays} 天）`;
+            statusEl.className = 'badge badge-status-graduated';
+        }
+
+        document.getElementById('cardMeta').textContent =
+            `難度因子 EF: ${st.ease.toFixed(2)} ｜ 連對: ${st.reps} 次 ｜ 遺忘: ${st.lapses} 次`;
+
+        document.getElementById('cardQuestion').textContent = `${card.id}. ${card.q}`;
+
+        // Render interactive options
+        const optsContainer = document.getElementById('cardOptions');
+        optsContainer.innerHTML = '';
+        card.options.forEach((optText, idx) => {
+            const letter = String.fromCharCode(65 + idx);
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `<span class="opt-letter">${letter}</span><span>${optText}</span>`;
+            btn.onclick = () => selectOption(letter, btn);
+            optsContainer.appendChild(btn);
+        });
+
+        // Update dynamic button intervals on Anki buttons
+        updateAnkiButtonLabels(st);
+
+        // Hide answer panel, show flip button
+        document.getElementById('answerPanel').style.display = 'none';
+        document.getElementById('btnShowAnswer').style.display = 'block';
+        document.querySelectorAll('.anki-btn').forEach(b => b.classList.remove('recommended'));
+    }
+
+    function updateAnkiButtonLabels(st) {
+        document.getElementById('time1').textContent = '< 1 分鐘 (3題後)';
+        document.getElementById('time2').textContent = '< 6 分鐘 (6題後)';
+        if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+            document.getElementById('time3').textContent = '10 分鐘 (12題後)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else if (st.status === 'learning' && st.reps >= 1) {
+            document.getElementById('time3').textContent = '1 天 (晉升熟記)';
+            document.getElementById('time4').textContent = '4 天 (直接熟記)';
+        } else {
+            const nextGood = Math.max(1, Math.round(st.intervalDays * st.ease));
+            const nextEasy = Math.max(4, Math.round(st.intervalDays * st.ease * 1.3));
+            document.getElementById('time3').textContent = `${nextGood} 天`;
+            document.getElementById('time4').textContent = `${nextEasy} 天`;
+        }
+    }
+
+    function selectOption(letter, clickedBtn) {
+        if (isRevealed) return;
+        revealAnswer(letter);
+    }
+
+    function revealAnswer(selectedLetter = null) {
+        if (isRevealed) return;
+        isRevealed = true;
+
+        const correctLetter = currentCard.a;
+        const correctIdx = correctLetter.charCodeAt(0) - 65;
+        const optButtons = document.querySelectorAll('.opt-btn');
+
+        optButtons.forEach((btn, idx) => {
+            btn.disabled = true;
+            const l = String.fromCharCode(65 + idx);
+            if (l === correctLetter) {
+                btn.classList.add('correct-choice');
+            } else if (selectedLetter && l === selectedLetter && selectedLetter !== correctLetter) {
+                btn.classList.add('wrong-choice');
+            }
+        });
+
+        const banner = document.getElementById('correctBanner');
+        if (selectedLetter) {
+            if (selectedLetter === correctLetter) {
+                banner.textContent = `🎉 答對了！正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate3').classList.add('recommended');
+            } else {
+                banner.textContent = `❌ 答錯了（您選 ${selectedLetter}）｜正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+                document.getElementById('btnRate1').classList.add('recommended');
+            }
+        } else {
+            banner.textContent = `💡 正確答案：(${correctLetter}) ${currentCard.options[correctIdx]}`;
+        }
+
+        document.getElementById('cardNote').textContent = currentCard.note;
+        document.getElementById('btnShowAnswer').style.display = 'none';
+        document.getElementById('answerPanel').style.display = 'block';
+    }
+
+    function rateCard(rating) {
+        if (!currentCard) return;
+        sessionStep++;
+        const st = srsState[currentCard.id];
+        const now = Date.now();
+        const DAY_MS = 86400 * 1000;
+
+        if (rating === 1) {
+            // Again: Forgot / Wrong
+            st.status = 'learning';
+            st.reps = 0;
+            st.lapses += 1;
+            st.ease = Math.max(1.3, st.ease - 0.2);
+            st.intervalDays = 0;
+            st.dueStep = sessionStep + 3; // reappear after ~3 cards
+        } else if (rating === 2) {
+            // Hard
+            st.status = 'learning';
+            st.ease = Math.max(1.3, st.ease - 0.15);
+            st.dueStep = sessionStep + 6; // reappear after ~6 cards
+        } else if (rating === 3) {
+            // Good
+            if (st.status === 'new' || (st.status === 'learning' && st.reps === 0)) {
+                st.status = 'learning';
+                st.reps = 1;
+                st.dueStep = sessionStep + 12;
+            } else if (st.status === 'learning' && st.reps >= 1) {
+                st.status = 'graduated';
+                st.reps += 1;
+                st.intervalDays = 1;
+                st.dueTime = now + 1 * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            } else {
+                st.reps += 1;
+                st.intervalDays = Math.max(1, Math.round(st.intervalDays * st.ease));
+                st.dueTime = now + st.intervalDays * DAY_MS;
+                st.dueStep = sessionStep + 9999;
+            }
+        } else if (rating === 4) {
+            // Easy: Graduate immediately
+            st.status = 'graduated';
+            st.reps += 1;
+            st.ease = Math.min(3.0, st.ease + 0.15);
+            st.intervalDays = st.intervalDays > 0 ? Math.max(4, Math.round(st.intervalDays * st.ease * 1.3)) : 4;
+            st.dueTime = now + st.intervalDays * DAY_MS;
+            st.dueStep = sessionStep + 9999;
+        }
+
+        saveSRS();
+
+        if (document.getElementById('modeSelect').value === 'SEQ') {
+            seqIndex++;
+        }
+
+        renderCard(pickNextCard());
+    }
+
+    function onFilterChange() {
+        seqIndex = 0;
+        renderCard(pickNextCard());
+        if (document.getElementById('browserPanel').style.display === 'block') {
+            renderBrowserTable();
+        }
+    }
+
+    function toggleBrowser() {
+        const panel = document.getElementById('browserPanel');
+        const cardView = document.getElementById('flashcardView');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            cardView.style.display = 'flex';
+        } else {
+            renderBrowserTable();
+            panel.style.display = 'block';
+            cardView.style.display = 'none';
+        }
+    }
+
+    function renderBrowserTable() {
+        const tbody = document.getElementById('browserBody');
+        const pool = getFilteredPool();
+        let html = '';
+
+        pool.forEach(c => {
+            const st = srsState[c.id];
+            const ansIdx = c.a.charCodeAt(0) - 65;
+            let badgeHtml = '';
+            if (st.status === 'new') badgeHtml = '<span class="badge badge-status-new">新卡片</span>';
+            else if (st.status === 'learning') badgeHtml = '<span class="badge badge-status-learning">學習中</span>';
+            else badgeHtml = `<span class="badge badge-status-graduated">熟記(${st.intervalDays}d)</span>`;
+
+            html += `
+                <tr class="browser-row" onclick="jumpToCard(${c.id})">
+                    <td><b>#${c.id}</b></td>
+                    <td><span style="font-size:0.8rem;color:#0369a1;font-weight:700;">${c.cat}</span></td>
+                    <td>
+                        <div style="font-weight:700;">${c.q}</div>
+                        <div style="font-size:0.84rem;color:#15803d;">正解：(${c.a}) ${c.options[ansIdx]}</div>
+                    </td>
+                    <td>${badgeHtml}</td>
+                    <td>${st.reps} / <span style="color:#dc2626;font-weight:700;">${st.lapses}</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function jumpToCard(id) {
+        const found = RAW_CARDS.find(c => c.id === id);
+        if (found) {
+            document.getElementById('browserPanel').style.display = 'none';
+            document.getElementById('flashcardView').style.display = 'flex';
+            renderCard(found);
+        }
+    }
+
+    function resetProgress() {
+        if (confirm('確定要清除所有 82 題的 Anki 學習紀錄，將全部卡片重置為「未學新卡」嗎？')) {
+            localStorage.removeItem(STORAGE_KEY);
+            srsState = {};
+            sessionStep = 0;
+            seqIndex = 0;
+            initSRS();
+            renderCard(pickNextCard());
+        }
+    }
+
+    // Keyboard shortcuts (Space to flip, 1-4 to rate)
+    window.addEventListener('keydown', (e) => {
+        if (document.getElementById('browserPanel').style.display === 'block') return;
+        if (e.code === 'Space') {
+            e.preventDefault();
+            if (!isRevealed) revealAnswer();
+        } else if (isRevealed) {
+            if (e.key === '1') rateCard(1);
+            else if (e.key === '2') rateCard(2);
+            else if (e.key === '3') rateCard(3);
+            else if (e.key === '4') rateCard(4);
+        }
+    });
+
+    window.onload = () => {
+        initSRS();
+        renderCard(pickNextCard());
+    };
+</script>
+
+</body>
+</html>
